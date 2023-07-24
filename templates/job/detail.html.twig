@@ -1,16 +1,16 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Plánovaná úloha{% endblock %}
+{% block title %}{{ 'job.detail.title'|trans }}{% endblock %}
 
 {% block header %}
     <div class="row">
         <div class="col-9">
-            <h1>Plánovaná úloha {{ job.relatedEntityId is not empty ?: 'pro entitu s ID' ~ ' ' ~ job.relatedEntityId }}</h1>
+            <h1>{{ 'job.detail.title'|trans }} {{ job.relatedEntityId is not empty ?: 'job.header.for.entity'|trans ~ ' ' ~ job.relatedEntityId }}</h1>
         </div>
         <div class="col text-right">
             <a href="{{ url('job_list', {id: job.relatedEntityId is not empty ?: job.relatedEntityId}) }}"
                class="btn btn-secondary" role="button">
-                Zpět na výpis
+                {{ 'job.detail.back.to.list'|trans }}
             </a>
         </div>
     </div>
@@ -19,37 +19,37 @@
 {% block body %}
     <table class="table table-bordered table-striped">
         <tr>
-            <th style="width: 20%">Command</th>
+            <th style="width: 20%">{{ 'job.command'|trans }}</th>
             <td>{{ job.command }}</td>
         </tr>
         <tr>
-            <th>State</th>
+            <th>{{ 'job.state'|trans }}</th>
             <td>
                 {{ job.status }}
                 <a href="{{ url('job_detail', {id: job.id}) }}" class="btn btn-sm btn-danger ml-5" role="button">
-                    Obnovit
+                    {{ 'job.detail.refresh'|trans }}
                 </a>
             </td>
         </tr>
         <tr>
-            <th>Created</th>
+            <th>{{ 'job.created'|trans }}</th>
             <td>{{ job.createdAt|date }}</td>
         </tr>
 
         {% if job.closedAt %}
             <tr>
-                <th>Runtime</th>
+                <th>{{ 'job.detail.runtime'|trans }}</th>
                 <td>{{ job.runTime }}</td>
             </tr>
             <tr>
-                <th>Closed</th>
+                <th>{{ 'job.detail.closed'|trans }}</th>
                 <td>{{ job.closedAt|date }}</td>
             </tr>
         {% endif %}
     </table>
 
     {% if job.output is not empty %}
-        <h3>Output</h3>
+        <h3>{{ 'job.detail.output'|trans }}</h3>
         <pre style="overflow:auto;">{{ job.output }}</pre>
     {% endif %}
 {% endblock %}

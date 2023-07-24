@@ -1,0 +1,13 @@
+job.detail: 'Detail'
+job.detail.title: "Plánovaná úloha"
+job.detail.refresh: "Obnovit"
+job.detail.back.to.list: "Zpět na výpis"
+job.detail.runtime: "Čas běhu"
+job.detail.closed: "Ukončeno"
+job.detail.output: "Výstup"
+job.list.title: "Plánované úlohy"
+job.list.back.to.list: "Zpět na úlohy"
+job.header.for.entity: "pro entitu s ID"
+job.command: "Příkaz"
+job.state: "Stav"
+job.created: "Zadáno"

@@ -1,16 +1,16 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Plánované úlohy{% endblock %}
+{% block title %}{{ 'job.list.title'|trans }}{% endblock %}
 
 {% block header %}
     <div class="row">
         <div class="col-8">
-            <h1>Plánované úlohy {{ relatedEntityId is not empty ?: 'pro entitu s ID' ~ ' ' ~ relatedEntityId }}</h1>
+            <h1>{{ 'job.list.title'|trans }} {{ relatedEntityId is not empty ?: {{ 'job.header.for.entity'|trans }} ~ ' ' ~ relatedEntityId }}</h1>
         </div>
         <div class="col text-right">
             <a href="{{ url('shop_commands', {id: relatedEntityId is not empty ?: relatedEntityId}) }}"
                class="btn btn-secondary" role="button">
-                Zpět na úlohy
+                {{ 'job.list.back.to.list'|trans }}
             </a>
         </div>
     </div>
@@ -20,9 +20,9 @@
     <table class="table table-hover">
         <thead>
         <tr>
-            <th>Příkaz</th>
-            <th>Zadáno</th>
-            <th>Stav</th>
+            <th>{{ 'job.command'|trans }}</th>
+            <th>{{ 'job.created'|trans }}</th>
+            <th>{{ 'job.state'|trans }}</th>
             <th></th>
         </tr>
         </thead>
@@ -35,7 +35,7 @@
                 <td>{{ job.status }}</td>
                 <td class="text-right">
                     <a href="{{ url('job_detail', {id: job.id}) }}" class="btn btn-sm btn-info" role="button">
-                        Detail
+                        {{ 'job.detail'|trans }}
                     </a>
                 </td>
             </tr>
