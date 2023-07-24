@@ -1,0 +1,35 @@
+{
+  "name": "tomatomcz/jobqueuebundle",
+  "description": "JMSJobQueueBundle alternative for Symfony 6+",
+  "type": "symfony-bundle",
+  "minimum-stability": "stable",
+  "keywords": [
+    "symfony job queue bundle alternative messenger"
+  ],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Tom Atom",
+      "email": "tom@tomatom.com"
+    }
+  ],
+  "require": {
+    "php": ">=8.1",
+    "knplabs/doctrine-behaviors": "^2.6",
+    "symfony/framework-bundle": "^6.3",
+    "symfony/messenger": "^6.3",
+    "symfony/process": "^6.3",
+    "twig/twig": "^3.6",
+    "stof/doctrine-extensions-bundle": "^1.8"
+  },
+  "autoload": {
+    "psr-4": {
+      "TomAtom\\JobQueueBundle\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "TomAtom\\JobQueueBundle\\Tests\\": "tests/"
+    }
+  }
+}

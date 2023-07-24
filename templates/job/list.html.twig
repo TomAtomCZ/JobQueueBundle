@@ -1,0 +1,45 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Plánované úlohy{% endblock %}
+
+{% block header %}
+    <div class="row">
+        <div class="col-8">
+            <h1>Plánované úlohy {{ relatedEntityId is not empty ?: 'pro entitu s ID' ~ ' ' ~ relatedEntityId }}</h1>
+        </div>
+        <div class="col text-right">
+            <a href="{{ url('shop_commands', {id: relatedEntityId is not empty ?: relatedEntityId}) }}"
+               class="btn btn-secondary" role="button">
+                Zpět na úlohy
+            </a>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th>Příkaz</th>
+            <th>Zadáno</th>
+            <th>Stav</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+
+        {% for job in jobs %}
+            <tr>
+                <td><code>{{ job.command }}</code></td>
+                <td>{{ job.createdAt|date('d.m.Y H:i:s') }}</td>
+                <td>{{ job.status }}</td>
+                <td class="text-right">
+                    <a href="{{ url('job_detail', {id: job.id}) }}" class="btn btn-sm btn-info" role="button">
+                        Detail
+                    </a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

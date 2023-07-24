@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Plánovaná úloha{% endblock %}
+
+{% block header %}
+    <div class="row">
+        <div class="col-9">
+            <h1>Plánovaná úloha {{ job.relatedEntityId is not empty ?: 'pro entitu s ID' ~ ' ' ~ job.relatedEntityId }}</h1>
+        </div>
+        <div class="col text-right">
+            <a href="{{ url('job_list', {id: job.relatedEntityId is not empty ?: job.relatedEntityId}) }}"
+               class="btn btn-secondary" role="button">
+                Zpět na výpis
+            </a>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <table class="table table-bordered table-striped">
+        <tr>
+            <th style="width: 20%">Command</th>
+            <td>{{ job.command }}</td>
+        </tr>
+        <tr>
+            <th>State</th>
+            <td>
+                {{ job.status }}
+                <a href="{{ url('job_detail', {id: job.id}) }}" class="btn btn-sm btn-danger ml-5" role="button">
+                    Obnovit
+                </a>
+            </td>
+        </tr>
+        <tr>
+            <th>Created</th>
+            <td>{{ job.createdAt|date }}</td>
+        </tr>
+
+        {% if job.closedAt %}
+            <tr>
+                <th>Runtime</th>
+                <td>{{ job.runTime }}</td>
+            </tr>
+            <tr>
+                <th>Closed</th>
+                <td>{{ job.closedAt|date }}</td>
+            </tr>
+        {% endif %}
+    </table>
+
+    {% if job.output is not empty %}
+        <h3>Output</h3>
+        <pre style="overflow:auto;">{{ job.output }}</pre>
+    {% endif %}
+{% endblock %}
