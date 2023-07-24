@@ -6,7 +6,6 @@ use TomAtom\JobQueueBundle\Repository\JobRepository;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: JobRepository::class)]
 #[ORM\Table(name: "job")]
@@ -38,14 +37,18 @@ class Job
     private string|array|null $output = null;
 
     #[ORM\Column(type: "datetime_immutable")]
-    #[Gedmo\Timestampable(on: "create")]
-    private ?DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt;
 
     #[ORM\Column(type: "datetime_immutable", nullable: true)]
     private ?DateTimeImmutable $startedAt = null;
 
     #[ORM\Column(type: "datetime_immutable", nullable: true)]
     private ?DateTimeImmutable $closedAt = null;
+
+    public function __construct()
+    {
+        $this->createdAt = new DateTimeImmutable();
+    }
 
     /**
      * @return int|null
