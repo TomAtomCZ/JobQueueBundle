@@ -25,7 +25,7 @@ class JobController extends AbstractController
      * @return Response
      * @throws NotSupported
      */
-    #[Route(path: '/{id}', name: 'job_detail')]
+    #[Route(path: '/{id}', name: 'job_queue_detail')]
     public function detail($id): Response
     {
         /** @var Job $job */
@@ -40,7 +40,7 @@ class JobController extends AbstractController
      * @param int|null $relatedEntityId
      * @return Response
      */
-    #[Route(path: '/list/{id}', name: 'job_list')]
+    #[Route(path: '/list/{id}', name: 'job_queue_list')]
     public function list(?int $relatedEntityId = null): Response
     {
         $jobs = $this->entityManager

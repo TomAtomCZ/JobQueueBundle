@@ -8,7 +8,7 @@
             <h1>{{ 'job.detail.title'|trans }} {{ job.relatedEntityId is not empty ?: 'job.header.for.entity'|trans ~ ' ' ~ job.relatedEntityId }}</h1>
         </div>
         <div class="col text-right">
-            <a href="{{ url('job_list', {id: job.relatedEntityId is not empty ?: job.relatedEntityId}) }}"
+            <a href="{{ url('job_queue_list', {id: job.relatedEntityId is not empty ?: job.relatedEntityId}) }}"
                class="btn btn-secondary" role="button">
                 {{ 'job.detail.back.to.list'|trans }}
             </a>
@@ -26,7 +26,7 @@
             <th>{{ 'job.state'|trans }}</th>
             <td>
                 {{ job.status }}
-                <a href="{{ url('job_detail', {id: job.id}) }}" class="btn btn-sm btn-danger ml-5" role="button">
+                <a href="{{ url('job_queue_detail', {id: job.id}) }}" class="btn btn-sm btn-danger ml-5" role="button">
                     {{ 'job.detail.refresh'|trans }}
                 </a>
             </td>
