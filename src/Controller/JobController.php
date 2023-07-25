@@ -37,29 +37,29 @@ class JobController extends AbstractController
     }
 
     /**
-     * @param int|null $relatedEntityId
+     * @param int|null $id
      * @return Response
      */
     #[Route(path: '/list/{id}', name: 'job_queue_list')]
-    public function list(?int $relatedEntityId = null): Response
+    public function list(?int $id = null): Response
     {
         $jobs = $this->entityManager
             ->createQueryBuilder()
             ->select('j')
             ->from(Job::class, 'j');
 
-        if (!empty($relatedEntityId)) {
-            $jobs->where('j.entityId = :entityId')
-                ->setParameter('entityId', $relatedEntityId);
+        if (!empty($id)) {
+            $jobs = $jobs->where('j.relatedEntityId = :id')
+                ->setParameter('id', $id);
         }
 
-        $jobs->orderBy('j.createdAt', 'DESC')
+        $jobs = $jobs->orderBy('j.createdAt', 'DESC')
             ->getQuery()
             ->getResult();
 
         return $this->render('job/list.html.twig', [
             'jobs' => $jobs,
-            'relatedEntityId' => $relatedEntityId,
+            'relatedEntityId' => $id,
         ]);
     }
 }

@@ -5,13 +5,7 @@
 {% block header %}
     <div class="row">
         <div class="col-8">
-            <h1>{{ 'job.list.title'|trans }} {{ relatedEntityId is not empty ?: {{ 'job.header.for.entity'|trans }} ~ ' ' ~ relatedEntityId }}</h1>
-        </div>
-        <div class="col text-right">
-            <a href="{{ url('shop_commands', {id: relatedEntityId is not empty ?: relatedEntityId}) }}"
-               class="btn btn-secondary" role="button">
-                {{ 'job.list.back.to.list'|trans }}
-            </a>
+            <h1>{{ 'job.list.title'|trans }} {{ relatedEntityId is not empty ? 'job.header.for.entity'|trans ~ ' ' ~ relatedEntityId : '' }}</h1>
         </div>
     </div>
 {% endblock %}
