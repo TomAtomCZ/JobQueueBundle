@@ -1,6 +1,6 @@
 # JobQueueBundle
 
-### Symfony Bundle which aims to replace JMSJobQueueBundle console commands scheduling.
+### Symfony Bundle which aims to replace JMSJobQueueBundle console commands scheduling, using Symfony messenger.
 
 #### Dependencies:
 
@@ -63,7 +63,11 @@ twig:
     '%kernel.project_dir%/vendor/tomatomcz/jobqueuebundle/templates': TomAtomJobQueue
 ```
 
-And update your database so the __job__ table is created (bin/console d:s:u --force or via migrations)
+#### And update your database so the __'job'__ table is created
+
+```shell
+(bin/console d:s:u --complete --force)
+```
 
 ### Usage:
 
@@ -96,7 +100,7 @@ try {
 return $this->redirectToRoute('job_queue_detail', ['id' => $job->getId()]);
 ```
 
-You can edit the __detail__ and __list__ twig templates like this:
+Create templates/job/ __detail__ and __list__ twig templates, which you will propably want to edit like this:
 
 ```twig
 {# templates/job/detail.html.twig #}
