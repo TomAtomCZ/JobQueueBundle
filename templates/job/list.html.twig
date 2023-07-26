@@ -15,6 +15,9 @@
         <thead>
         <tr>
             <th>{{ 'job.command'|trans }}</th>
+            {% if relatedEntityId is empty %}
+                <th>{{ 'job.list.related.entity'|trans }}</th>
+            {% endif %}
             <th>{{ 'job.created'|trans }}</th>
             <th>{{ 'job.state'|trans }}</th>
             <th></th>
@@ -25,6 +28,9 @@
         {% for job in jobs %}
             <tr>
                 <td><code>{{ job.command }}</code></td>
+                {% if relatedEntityId is empty %}
+                    <td>{{ job.relatedEntityId }}</td>
+                {% endif %}
                 <td>{{ job.createdAt|date('d.m.Y H:i:s') }}</td>
                 <td>{{ job.status }}</td>
                 <td class="text-right">
