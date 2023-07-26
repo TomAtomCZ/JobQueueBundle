@@ -39,7 +39,7 @@
         {% if job.closedAt %}
             <tr>
                 <th>{{ 'job.detail.runtime'|trans }}</th>
-                <td>{{ job.runTime }}</td>
+                <td>{{ job.runtime.h }} {{ 'job.runtime.hours'|trans }} {{ job.runTime.i }} {{ 'job.runtime.minutes'|trans }} {{ job.runTime.s }} {{ 'job.runtime.seconds'|trans }}</td>
             </tr>
             <tr>
                 <th>{{ 'job.detail.closed'|trans }}</th>

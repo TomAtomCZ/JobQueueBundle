@@ -49,6 +49,7 @@ class JobMessageHandler
 
         $job->setStatus($process->isSuccessful() ? Job::STATUS_COMPLETED : Job::STATUS_FAILED);
         $job->setClosedAt(new DateTimeImmutable());
+        $job->setRuntime($job->getStartedAt()->diff($job->getClosedAt()));
 
         $this->entityManager->persist($job);
         $this->entityManager->flush();

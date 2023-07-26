@@ -2,6 +2,7 @@
 
 namespace TomAtom\JobQueueBundle\Entity;
 
+use DateInterval;
 use TomAtom\JobQueueBundle\Repository\JobRepository;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
@@ -44,6 +45,9 @@ class Job
 
     #[ORM\Column(type: "datetime_immutable", nullable: true)]
     private ?DateTimeImmutable $closedAt = null;
+
+    #[ORM\Column(type: "dateinterval", nullable: true)]
+    private ?DateInterval $runtime = null;
 
     public function __construct()
     {
@@ -213,12 +217,20 @@ class Job
     }
 
     /**
-     * Get the run time of the called command
-     * @return string
+     * @return DateInterval|null
      */
-    public function getRunTime(): string
+    public function getRuntime(): ?DateInterval
     {
-        $dateTimeDiff = $this->getStartedAt()->diff($this->getClosedAt());
-        return $dateTimeDiff->h . ' hours ' . $dateTimeDiff->i . ' minutes ' . $dateTimeDiff->s . ' seconds ';
+        return $this->runtime;
+    }
+
+    /**
+     * @param DateInterval|null $runtime
+     * @return Job
+     */
+    public function setRuntime(?DateInterval $runtime): Job
+    {
+        $this->runtime = $runtime;
+        return $this;
     }
 }

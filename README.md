@@ -113,3 +113,24 @@ Create templates/job/ __detail__ and __list__ twig templates, which you will pro
 
 {% block body %}...{% endblock %}
 ```
+
+To change or add translations for a new locale, use those translation variables in your messages.{locale}.yaml:
+
+```yaml
+job.detail: 'Detail'
+job.detail.title: "Planned task"
+job.detail.refresh: "Refresh"
+job.detail.back.to.list: "Back to list"
+job.detail.runtime: "Runtime"
+job.detail.closed: "Closed"
+job.detail.output: "Output"
+job.list.title: "Planned tasks"
+job.list.back.to.list: "Back to tasks"
+job.header.for.entity: "for entity with ID"
+job.command: "Command"
+job.state: "State"
+job.created: "Created"
+job.runtime.hours: "hours"
+job.runtime.minutes: "minutes"
+job.runtime.seconds: "seconds"
+```
