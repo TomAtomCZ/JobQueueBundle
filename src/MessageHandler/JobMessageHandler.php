@@ -30,7 +30,7 @@ class JobMessageHandler
 
         // Start the process
         $process = new Process(explode(' ', $command));
-        $process->setWorkingDirectory(dirname(__DIR__, 2));
+        $process->setWorkingDirectory(dirname(__DIR__, 5));
         $process->enableOutput();
         $process->start();
 

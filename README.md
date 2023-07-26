@@ -66,7 +66,7 @@ twig:
 #### And update your database so the __'job'__ table is created
 
 ```shell
-(bin/console d:s:u --complete --force)
+bin/console d:s:u --complete --force
 ```
 
 ### Usage:
