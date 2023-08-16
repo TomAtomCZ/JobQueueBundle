@@ -5,7 +5,13 @@
 {% block header %}
     <div class="row">
         <div class="col-9">
-            <h1>{{ 'job.detail.title'|trans }} {{ job.relatedEntityId is not empty ? 'job.header.for.entity'|trans ~ ' ' ~ job.relatedEntityId : '' }}</h1>
+            <h1>{{ 'job.detail.title'|trans }} {{ job.id }}
+                {% if job.relatedEntityName is not empty %}
+                    {{ 'job.header.for'|trans }} <strong>{{ job.relatedEntityName }}</strong>
+                {% elseif job.relatedEntityName is empty and job.relatedEntityId is not empty %}
+                    {{ 'job.header.for.entity.with.id'|trans ~ ' ' ~ job.relatedEntityId }}
+                {% endif %}
+            </h1>
         </div>
         <div class="col text-right">
             <a href="{{ url('job_queue_list', {id: job.relatedEntityId is not empty ? job.relatedEntityId : null}) }}"

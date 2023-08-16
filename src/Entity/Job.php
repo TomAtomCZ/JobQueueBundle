@@ -34,6 +34,9 @@ class Job
     #[ORM\Column(type: "integer", nullable: true)]
     private ?int $relatedEntityId = null;
 
+    #[ORM\Column(type: "string", nullable: true)]
+    private ?string $relatedEntityName = null;
+
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private string|array|null $output = null;
 
@@ -105,6 +108,24 @@ class Job
     public function setRelatedEntityId(?int $relatedEntityId): Job
     {
         $this->relatedEntityId = $relatedEntityId;
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getRelatedEntityName(): ?string
+    {
+        return $this->relatedEntityName;
+    }
+
+    /**
+     * @param string|null $relatedEntityName
+     * @return Job
+     */
+    public function setRelatedEntityName(?string $relatedEntityName): Job
+    {
+        $this->relatedEntityName = $relatedEntityName;
         return $this;
     }
 

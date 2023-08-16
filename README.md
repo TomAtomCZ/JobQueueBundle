@@ -76,6 +76,7 @@ So far there is only one function __createCommandJob__, which accepts:
 * command name,
 * command parameters,
 * ID of related entity (optional)
+* Name of related entity (optional)
 
 and returns ID of the created job, for example:
 
@@ -89,7 +90,7 @@ $params = [
 
 // Try to create the command job
 try {
-    $job = $this->commandJobFactory->createCommandJob($commandName, $params, $entity->getId());
+    $job = $this->commandJobFactory->createCommandJob($commandName, $params, $entity->getId(), $entity->getName());
 } catch (OptimisticLockException|ORMException $e) {
     // Redirect back upon failure
     $this->logger->error('createCommandJob error: ' . $e->getMessage());
