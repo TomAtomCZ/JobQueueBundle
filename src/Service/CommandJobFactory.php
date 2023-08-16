@@ -24,13 +24,13 @@ class CommandJobFactory
     /**
      * @param string $commandName
      * @param array $params
-     * @param int|null $entityId
-     * @param string|null $entityName
+     * @param int|null $entityId - Entity ID
+     * @param string|null $entityClassName - Entity class name (self:class)
      * @return Job
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function createCommandJob(string $commandName, array $params, int $entityId = null, string $entityName = null): Job
+    public function createCommandJob(string $commandName, array $params, int $entityId = null, string $entityClassName = null): Job
     {
         // Save init data of the job to db
         $job = new Job();
@@ -38,7 +38,7 @@ class CommandJobFactory
         $job->setCommandParams($params);
         $job->setStatus(Job::STATUS_PLANNED);
         $job->setRelatedEntityId($entityId);
-        $job->setRelatedEntityName($entityName);
+        $job->setRelatedEntityClassName($entityClassName);
 
         $this->entityManager->persist($job);
         $this->entityManager->flush();

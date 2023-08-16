@@ -2,6 +2,7 @@
 
 namespace TomAtom\JobQueueBundle\Controller;
 
+use Doctrine\ORM\EntityNotFoundException;
 use TomAtom\JobQueueBundle\Entity\Job;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -21,18 +22,29 @@ class JobController extends AbstractController
     }
 
     /**
-     * @param $id
+     * @param int $id
      * @return Response
      * @throws NotSupported
+     * @throws EntityNotFoundException
      */
     #[Route(path: '/{id}', name: 'job_queue_detail')]
-    public function detail($id): Response
+    public function detail(int $id): Response
     {
         /** @var Job $job */
         $job = $this->entityManager->getRepository(Job::class)->findOneBy(['id' => $id]);
 
+        if (empty($job)) {
+            throw new EntityNotFoundException();
+        }
+
+        $entity = null;
+        if (!empty($job->getRelatedEntityClassName()) && !empty($job->getRelatedEntityId())) {
+            $entity = $this->entityManager->getRepository($job->getRelatedEntityClassName())->find($job->getRelatedEntityId());
+        }
+
         return $this->render('job/detail.html.twig', [
-            'job' => $job
+            'job' => $job,
+            'relatedEntity' => $entity
         ]);
     }
 
