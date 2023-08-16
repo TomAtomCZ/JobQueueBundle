@@ -37,12 +37,19 @@ class JobController extends AbstractController
     }
 
     /**
-     * @param int|null $id
+     * @param int|null $id - Related entity id
+     * @param string|null $name - Related entity class name (self::class)
      * @return Response
+     * @throws NotSupported
      */
-    #[Route(path: '/list/{id}', name: 'job_queue_list')]
-    public function list(?int $id = null): Response
+    #[Route(path: '/list/{id}/{name}', name: 'job_queue_list')]
+    public function list(?int $id = null, string $name = null): Response
     {
+        $entity = null;
+        if (!empty($name) && !empty($id)) {
+            $entity = $this->entityManager->getRepository($name)->find($id);
+        }
+
         $jobs = $this->entityManager
             ->createQueryBuilder()
             ->select('j')
@@ -60,6 +67,7 @@ class JobController extends AbstractController
         return $this->render('job/list.html.twig', [
             'jobs' => $jobs,
             'relatedEntityId' => $id,
+            'relatedEntity' => $entity,
         ]);
     }
 }

@@ -1,5 +1,5 @@
 {
-  "name": "tomatomcz/jobqueuebundle",
+  "name": "tomatom/jobqueuebundle",
   "description": "JMSJobQueueBundle alternative for Symfony 6+",
   "type": "symfony-bundle",
   "minimum-stability": "stable",

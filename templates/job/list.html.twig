@@ -3,9 +3,15 @@
 {% block title %}{{ 'job.list.title'|trans }}{% endblock %}
 
 {% block header %}
-    <div class="row">
-        <div class="col-8">
-            <h1>{{ 'job.list.title'|trans }} {{ relatedEntityId is not empty ? 'job.header.for.entity'|trans ~ ' ' ~ relatedEntityId : '' }}</h1>
+    <div class="row align-items-center">
+        <div class="col-10 my-2">
+            <h1>{{ 'job.list.title'|trans }}
+                {% if relatedEntity is not empty %}
+                    {{ 'job.header.for'|trans }} <strong>{{ relatedEntity }}</strong>
+                {% elseif relatedEntity is empty and relatedEntityId is not empty %}
+                    {{ 'job.header.for.entity.with.id'|trans ~ ' ' ~ relatedEntityId }}
+                {% endif %}
+            </h1>
         </div>
     </div>
 {% endblock %}
