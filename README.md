@@ -15,7 +15,7 @@
 ### Installation:
 
 ```
-composer require tomatomcz/jobqueuebundle
+composer require tomatom/jobqueuebundle
 ```
 
 ### Configuration:
@@ -30,8 +30,8 @@ config/services.yaml:
 
 ```yml
 TomAtom\JobQueueBundle\:
-  resource: '../vendor/tomatomcz/jobqueuebundle/src/*'
-  exclude: '../vendor/tomatomcz/jobqueuebundle/src/{DependencyInjection,Entity,Tests,Kernel.php}'
+  resource: '../vendor/tomatom/jobqueuebundle/src/*'
+  exclude: '../vendor/tomatom/jobqueuebundle/src/{DependencyInjection,Entity,Tests,Kernel.php}'
 ```
 
 config/routes.yaml:
@@ -39,7 +39,7 @@ config/routes.yaml:
 ```yaml
 jobqueue:
   resource:
-    path: '../vendor/tomatomcz/jobqueuebundle/src/Controller'
+    path: '../vendor/tomatom/jobqueuebundle/src/Controller'
     namespace: TomAtom\JobQueueBundle\Controller
   type: attribute
 ```
@@ -60,7 +60,7 @@ config/packages/twig.yaml:
 twig:
   ...
   paths:
-    '%kernel.project_dir%/vendor/tomatomcz/jobqueuebundle/templates': TomAtomJobQueue
+    '%kernel.project_dir%/vendor/tomatom/jobqueuebundle/templates': TomAtomJobQueue
 ```
 
 #### And update your database so the __'job'__ table is created
