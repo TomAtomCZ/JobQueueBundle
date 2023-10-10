@@ -32,6 +32,7 @@ class JobMessageHandler
         $process = new Process(explode(' ', $command));
         $process->setWorkingDirectory(dirname(__DIR__, 5));
         $process->enableOutput();
+        $process->setTimeout(null);
         $process->start();
 
         // Update the job
