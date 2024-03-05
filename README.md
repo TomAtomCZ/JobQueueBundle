@@ -6,10 +6,10 @@
 
 * doctrine/doctrine-bundle: ^2.10
 * doctrine/orm: ^2.15
-* symfony/framework-bundle: ^6.3
-* symfony/messenger: ^6.3
-* symfony/process: ^6.3
-* symfony/translation: ^6.3
+* symfony/framework-bundle: ^6.4
+* symfony/messenger: ^6.4
+* symfony/process: ^6.4
+* symfony/translation: ^6.4
 * twig/twig: ^3.6
 
 ### Installation:
@@ -51,7 +51,7 @@ framework:
   messenger:
     ...
     routing:
-      'TomAtom\JobQueueBundle\Message\JobMessage': async # or 'sync'
+      'TomAtom\JobQueueBundle\Message\JobMessage': async # or your own transport
 ```
 
 config/packages/twig.yaml:
@@ -91,7 +91,7 @@ $params = [
 // Try to create the command job
 try {
     $job = $this->commandJobFactory->createCommandJob($commandName, $params, $entity->getId(), Entity::class);
-} catch (OptimisticLockException|ORMException $e) {
+} catch (OptimisticLockException|ORMException|CommandJobException $e) {
     // Redirect back upon failure
     $this->logger->error('createCommandJob error: ' . $e->getMessage());
     return $this->redirectToRoute('your_route');
@@ -135,4 +135,5 @@ job.created: "Created"
 job.runtime.hours: "hours"
 job.runtime.minutes: "minutes"
 job.runtime.seconds: "seconds"
+job.already.exists: "The same job is already planned."
 ```
