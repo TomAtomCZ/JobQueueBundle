@@ -26,7 +26,7 @@
     <table class="table table-bordered table-striped">
         <tr>
             <th style="width: 20%">{{ 'job.command'|trans }}</th>
-            <td>{{ job.command }}</td>
+            <td>{{ job.command }} {{ job.commandParams|join(' ') }}</td>
         </tr>
         <tr>
             <th>{{ 'job.state'|trans }}</th>
