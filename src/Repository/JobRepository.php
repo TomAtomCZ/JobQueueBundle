@@ -2,9 +2,9 @@
 
 namespace TomAtom\JobQueueBundle\Repository;
 
-use TomAtom\JobQueueBundle\Entity\Job;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use TomAtom\JobQueueBundle\Entity\Job;
 
 /**
  * @method Job|null find($id, $lockMode = null, $lockVersion = null)
@@ -35,5 +35,26 @@ class JobRepository extends ServiceEntityRepository
         if ($flush) {
             $this->getEntityManager()->flush();
         }
+    }
+
+    public function isAlreadyCreated(string $command, array $params): bool
+    {
+        $isCreated = $this->createQueryBuilder('j')
+            ->where('j.status = :status')
+            ->andWhere('j.command = :command')
+            ->andWhere('j.commandParams = :commandParams')
+            ->setParameters([
+                'status' => Job::STATUS_PLANNED,
+                'command' => $command,
+                'commandParams' => trim(implode(',', $params)),
+            ])
+            ->getQuery()
+            ->getResult();
+
+        if (!empty($isCreated)) {
+            return true;
+        }
+
+        return false;
     }
 }
