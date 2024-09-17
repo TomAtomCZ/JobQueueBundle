@@ -2,14 +2,13 @@
 
 namespace TomAtom\JobQueueBundle\Controller;
 
-use Doctrine\ORM\EntityNotFoundException;
-use TomAtom\JobQueueBundle\Entity\Job;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Exception\NotSupported;
+use Doctrine\ORM\EntityNotFoundException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use TomAtom\JobQueueBundle\Entity\Job;
 
 #[Route(path: '/job')]
 class JobController extends AbstractController
@@ -24,7 +23,6 @@ class JobController extends AbstractController
     /**
      * @param int $id
      * @return Response
-     * @throws NotSupported
      * @throws EntityNotFoundException
      */
     #[Route(path: '/{id}', name: 'job_queue_detail')]
@@ -52,7 +50,6 @@ class JobController extends AbstractController
      * @param int|null $id - Related entity id
      * @param string|null $name - Related entity class name (self::class)
      * @return Response
-     * @throws NotSupported
      */
     #[Route(path: '/list/{id}/{name}', name: 'job_queue_list')]
     public function list(?int $id = null, string $name = null): Response

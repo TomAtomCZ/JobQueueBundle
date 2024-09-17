@@ -41,13 +41,11 @@ class JobRepository extends ServiceEntityRepository
     {
         $isCreated = $this->createQueryBuilder('j')
             ->where('j.status = :status')
+            ->setParameter('status', Job::STATUS_PLANNED)
             ->andWhere('j.command = :command')
+            ->setParameter('command', $command)
             ->andWhere('j.commandParams = :commandParams')
-            ->setParameters([
-                'status' => Job::STATUS_PLANNED,
-                'command' => $command,
-                'commandParams' => trim(implode(',', $params)),
-            ])
+            ->setParameter('commandParams', trim(implode(',', $params)))
             ->getQuery()
             ->getResult();
 

@@ -4,7 +4,6 @@ namespace TomAtom\JobQueueBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Exception\NotSupported;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -35,7 +34,6 @@ class CommandJobFactory
      * @throws CommandJobException
      * @throws ORMException
      * @throws OptimisticLockException
-     * @throws NotSupported
      */
     public function createCommandJob(string $commandName, array $params, int $entityId = null, string $entityClassName = null): Job
     {
