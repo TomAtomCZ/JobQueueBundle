@@ -27,6 +27,16 @@ composer require tomatom/jobqueuebundle
 TomAtom\JobQueueBundle\JobQueueBundle::class => ['all' => true]
 ```
 
+#### config/routes.yaml:
+
+```yaml
+job_queue:
+  resource:
+    path: '../vendor/tomatom/jobqueuebundle/src/Controller'
+    namespace: TomAtom\JobQueueBundle\Controller
+  type: attribute
+```
+
 #### config/packages/messenger.yaml:
 
 You can create own transport for the job messages - or just use *async* transport

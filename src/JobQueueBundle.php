@@ -2,9 +2,9 @@
 
 namespace TomAtom\JobQueueBundle;
 
-use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
-use TomAtom\JobQueueBundle\DependencyInjection\JobQueueExtension;
 use function dirname;
 
 class JobQueueBundle extends AbstractBundle
@@ -14,12 +14,8 @@ class JobQueueBundle extends AbstractBundle
         return dirname(__DIR__);
     }
 
-    public function getContainerExtension(): ?ExtensionInterface
+    public function loadExtension(array $config, ContainerConfigurator $container, ContainerBuilder $builder): void
     {
-        if (null === $this->extension) {
-            $this->extension = new JobQueueExtension();
-        }
-
-        return $this->extension;
+        $container->import($this->getPath() . '/config/services.yaml');
     }
 }
