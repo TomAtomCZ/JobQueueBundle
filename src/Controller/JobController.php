@@ -40,7 +40,7 @@ class JobController extends AbstractController
             $entity = $this->entityManager->getRepository($job->getRelatedEntityClassName())->find($job->getRelatedEntityId());
         }
 
-        return $this->render('job/detail.html.twig', [
+        return $this->render('@JobQueue/job/detail.html.twig', [
             'job' => $job,
             'relatedEntity' => $entity
         ]);
@@ -73,7 +73,7 @@ class JobController extends AbstractController
             ->getQuery()
             ->getResult();
 
-        return $this->render('job/list.html.twig', [
+        return $this->render('@JobQueue/job/list.html.twig', [
             'jobs' => $jobs,
             'relatedEntityId' => $id,
             'relatedEntity' => $entity,
