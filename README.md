@@ -4,13 +4,14 @@
 
 #### Dependencies:
 
-* doctrine/doctrine-bundle: ^2.10
-* doctrine/orm: ^2.15
+* php: >=8.1
+* doctrine/doctrine-bundle: ^2
+* doctrine/orm: ^2|^3
 * symfony/framework-bundle: ^6.4
 * symfony/messenger: ^6.4
 * symfony/process: ^6.4
 * symfony/translation: ^6.4
-* twig/twig: ^3.6
+* twig/twig: ^3
 
 ### Installation:
 
@@ -20,54 +21,37 @@ composer require tomatom/jobqueuebundle
 
 ### Configuration:
 
-config/bundles.php:
+#### config/bundles.php:
 
 ```php
 TomAtom\JobQueueBundle\JobQueueBundle::class => ['all' => true]
 ```
 
-config/services.yaml:
+#### config/packages/messenger.yaml:
 
-```yml
-TomAtom\JobQueueBundle\:
-  resource: '../vendor/tomatom/jobqueuebundle/src/*'
-  exclude: '../vendor/tomatom/jobqueuebundle/src/{DependencyInjection,Entity,Tests,Kernel.php}'
-```
-
-config/routes.yaml:
-
-```yaml
-jobqueue:
-  resource:
-    path: '../vendor/tomatom/jobqueuebundle/src/Controller'
-    namespace: TomAtom\JobQueueBundle\Controller
-  type: attribute
-```
-
-config/packages/messenger.yaml:
+You can create own transport for the job messages - or just use *async* transport
 
 ```yaml
 framework:
   messenger:
-    ...
+    # Your messenger config
+    transports:
+    # Your other transports
+    job_message:
+      dsn: "%env(MESSENGER_TRANSPORT_DSN)%"
+      options:
+        queue_name: job_message
     routing:
-      'TomAtom\JobQueueBundle\Message\JobMessage': async # or your own transport
+      'TomAtom\JobQueueBundle\Message\JobMessage': job_message # or async
 ```
 
-config/packages/twig.yaml:
-
-```yaml
-twig:
-  ...
-  paths:
-    '%kernel.project_dir%/vendor/tomatom/jobqueuebundle/templates': TomAtomJobQueue
-```
-
-#### And update your database so the __'job'__ table is created
+#### Update your database so the __'job_queue'__ table is created
 
 ```shell
-bin/console d:s:u --complete --force
+php bin/console d:s:u --complete --force
 ```
+
+or via migrations if you are using them.
 
 ### Usage:
 
@@ -101,12 +85,12 @@ try {
 return $this->redirectToRoute('job_queue_detail', ['id' => $job->getId()]);
 ```
 
-Create templates/job/ __detail__ and __list__ twig templates, which you will propably want to edit like this:
+Extending the templates can be done like this:
 
 ```twig
 {# templates/job/detail.html.twig #}
 
-{% extends "@TomAtomJobQueue/job/detail.html.twig" %}
+{% extends '@JobQueue/job/detail.html.twig' %}
 
 {% block title %}...{% endblock %}
 
@@ -115,7 +99,10 @@ Create templates/job/ __detail__ and __list__ twig templates, which you will pro
 {% block body %}...{% endblock %}
 ```
 
-To change or add translations for a new locale, use those translation variables in your messages.{locale}.yaml:
+To change or add translations for a new locale, use those translation variables in your
+translations/messages.{locale}.yaml:
+
+(Currently there are only translations for *en* and *cs* locales)
 
 ```yaml
 job.detail: 'Detail'
