@@ -1,0 +1,8 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
+  TomAtom\JobQueueBundle\:
+    resource: '../src/*'
+    exclude: '../src/{DependencyInjection,Entity,Tests,Kernel.php}'
