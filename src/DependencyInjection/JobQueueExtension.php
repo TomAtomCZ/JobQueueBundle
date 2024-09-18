@@ -3,9 +3,9 @@
 namespace TomAtom\JobQueueBundle\DependencyInjection;
 
 use Exception;
+use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
-use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
 class JobQueueExtension extends Extension
@@ -17,7 +17,7 @@ class JobQueueExtension extends Extension
     {
         $loader = new YamlFileLoader(
             $container,
-            new FileLocator(__DIR__ . '/../../config')
+            new FileLocator(__DIR__ . '/../Resources/config')
         );
         $loader->load('services.yaml');
     }
