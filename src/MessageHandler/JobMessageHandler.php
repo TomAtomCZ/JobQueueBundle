@@ -2,12 +2,12 @@
 
 namespace TomAtom\JobQueueBundle\MessageHandler;
 
-use TomAtom\JobQueueBundle\Entity\Job;
-use TomAtom\JobQueueBundle\Message\JobMessage;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Process\Process;
+use TomAtom\JobQueueBundle\Entity\Job;
+use TomAtom\JobQueueBundle\Message\JobMessage;
 
 #[AsMessageHandler]
 class JobMessageHandler
@@ -26,7 +26,14 @@ class JobMessageHandler
         $job = $this->entityManager->getRepository(Job::class)->findOneBy(['id' => $jobId]);
         $commandName = $job->getCommand();
         $params = $job->getCommandParams();
-        $command = sprintf('php bin/console %s %s', $commandName, implode(' ', $params));
+        $command = 'php bin/console ' . $commandName;
+        if ($params !== null && $params !== [] && $params !== '') {
+            if (is_array($params)) {
+                $command .= ' ' . implode(' ', $params);
+            } else {
+                $command .= ' ' . $params;
+            }
+        }
 
         // Start the process
         $process = new Process(explode(' ', $command));
