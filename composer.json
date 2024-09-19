@@ -9,8 +9,8 @@
   "license": "MIT",
   "authors": [
     {
-      "name": "Tom Atom",
-      "email": "tom@tomatom.com"
+      "name": "Matěj Votruba",
+      "email": "fsfmatej@gmail.com"
     }
   ],
   "require": {
@@ -32,5 +32,12 @@
     "psr-4": {
       "TomAtom\\JobQueueBundle\\Tests\\": "tests/"
     }
+  },
+  "extra": {
+    "symfony": {
+      "allow-contrib": true,
+      "require": "6.4.*"
+    },
+    "public-dir": "public"
   }
 }

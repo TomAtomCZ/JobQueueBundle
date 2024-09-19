@@ -13,13 +13,13 @@
 * symfony/translation: ^6.4
 * twig/twig: ^3
 
-### Installation:
+## Installation:
 
 ```
 composer require tomatom/jobqueuebundle
 ```
 
-### Configuration:
+## Configuration:
 
 #### config/bundles.php:
 
@@ -63,9 +63,12 @@ php bin/console d:s:u --complete --force
 
 or via migrations if you are using them.
 
-### Usage:
+## Usage:
 
-So far there is only one function __createCommandJob__, which accepts:
+#### Manually creating the jobs in your application:
+
+
+The function __createCommandJob__ from __CommandJobFactory__ accepts:
 
 * command name,
 * command parameters,
@@ -95,6 +98,21 @@ try {
 return $this->redirectToRoute('job_queue_detail', ['id' => $job->getId()]);
 ```
 
+#### Creating jobs via the browser interface:
+On the url __/command__ you can schedule all commands from your application (Symfony ones included):
+
+![img_schedule_command.png](docs/img_schedule_command.png)
+
+On the url __/job/list__ you can see all your jobs
+
+![img_job_list.png](docs/img_job_list.png)
+
+On the url __/job/{id}__ you can see the detail of each job
+
+![img_job_detail.png](docs/img_job_detail.png)
+
+Note - the design will probably change for the better, but you can create your own. 
+
 Extending the templates can be done like this:
 
 ```twig
@@ -115,22 +133,53 @@ translations/messages.{locale}.yaml:
 (Currently there are only translations for *en* and *cs* locales)
 
 ```yaml
-job.detail: 'Detail'
-job.detail.title: "Planned task"
-job.detail.refresh: "Refresh"
-job.detail.back.to.list: "Back to list"
-job.detail.runtime: "Runtime"
-job.detail.closed: "Closed"
-job.detail.output: "Output"
-job.list.title: "Planned tasks"
-job.list.related.entity: "Entity ID"
-job.list.back.to.list: "Back to tasks"
-job.header.for.entity: "for entity with ID"
-job.command: "Command"
-job.state: "State"
-job.created: "Created"
-job.runtime.hours: "hours"
-job.runtime.minutes: "minutes"
-job.runtime.seconds: "seconds"
-job.already.exists: "The same job is already planned."
+job:
+  job_list: "Job list"
+  create_job: "Create job"
+  detail:
+    self: "Detail"
+    title: "Planned job"
+    refresh: "Refresh"
+    runtime: "Runtime"
+    closed: "Closed"
+    output: "Output"
+  list:
+    title: "Planned jobs"
+    related_entity: "Entity ID"
+    back_to_list: "Back to jobs"
+  header:
+    for_entity_with_id: "for entity with ID"
+    for: "for"
+  command: "Command"
+  state: "State"
+  created: "Created"
+  runtime:
+    hours: "hours"
+    minutes: "minutes"
+    seconds: "seconds"
+  already_exists: "The same job is already planned."
+  creation:
+    success: "Job successfully planned."
+    error: "An error occurred while planning the job"
+
+command:
+  title: "Command schedule"
+  select: "Select a command to run"
+  select.label: "Command"
+  schedule.job: "Schedule command job"
+  params.label: "Write the command's parameters as you would normally in the console"
+  available: "Available command"
+  argument: "Argument"
+  arguments: "arguments"
+  option: "Option"
+  options: "options"
+  description: "Description"
+  mode: "Mode"
+  shortcut: "Shortcut"
 ```
+
+## TODO:
+Add configuration for things such as table name
+
+## Contributing:
+Feel free to open any issues or pull requests if you find something wrong or missing what you'd like the bundle to have!
