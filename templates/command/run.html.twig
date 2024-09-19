@@ -1,0 +1,182 @@
+{% extends '@JobQueue/base.html.twig' %}
+
+{% block title %}{{ 'command.title'|trans }}{% endblock %}
+
+{% block header %}
+    <div class="row align-items-center mt-4">
+        <div class="col-10 my-2">
+            <h1>{{ 'command.schedule.job'|trans }}</h1>
+        </div>
+        <div class="col text-end">
+            <a href="{{ path('job_queue_list') }}"
+               class="btn btn-secondary" role="button">
+                {{ 'job.job_list'|trans }}
+            </a>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Update available command params on load
+            const commandSelect = document.getElementById('command_select');
+            const selectedOption = commandSelect.selectedOptions[0];
+            updateAvailableParams(selectedOption);
+            commandSelect.addEventListener('change', function () {
+                // Update available command params on select change
+                const selectedOption = commandSelect.selectedOptions[0];
+                updateAvailableParams(selectedOption);
+            });
+        });
+
+        /**
+         * Update available command params based on the selected command
+         * @param command
+         */
+        function updateAvailableParams(command) {
+            const availableParamsDiv = document.getElementById('command_available_params');
+            const availableArguments = document.getElementById('command_available_arguments');
+            const availableOptions = document.getElementById('command_available_options');
+            const paramsTranslationsDivDataset = document.getElementById('params-translations').dataset;
+            const argumentTranslation = paramsTranslationsDivDataset.argument;
+            const optionTranslation = paramsTranslationsDivDataset.option;
+            const descriptionTranslation = paramsTranslationsDivDataset.description;
+            const modeTranslation = paramsTranslationsDivDataset.mode;
+            const shortcutTranslation = paramsTranslationsDivDataset.shortcut;
+
+            // Empty the div before updating
+            availableArguments.innerHTML = '';
+            availableOptions.innerHTML = '';
+
+            // Track if there are any parameters to display
+            let hasParams = false;
+
+            // Loop through all the dataset properties of the option
+            for (const [key, value] of Object.entries(command.dataset)) {
+                // Check which key the command starts with and display the given value
+                if (key.startsWith('command_argument_name') && value) {
+                    addCommandParamsListItem(value, argumentTranslation, availableArguments, true);
+                    hasParams = true;
+                }
+                if (key.startsWith('command_argument_description') && value) {
+                    addCommandParamsListItem(value, descriptionTranslation, availableArguments);
+                }
+                if (key.startsWith('command_argument_mode') && value) {
+                    addCommandParamsListItem(value, modeTranslation, availableArguments);
+                }
+                if (key.startsWith('command_option_name') && value) {
+                    addCommandParamsListItem(value, optionTranslation, availableOptions, true);
+                    hasParams = true;
+                }
+                if (key.startsWith('command_option_description') && value) {
+                    addCommandParamsListItem(value, descriptionTranslation, availableOptions);
+                }
+                if (key.startsWith('command_option_mode') && value) {
+                    addCommandParamsListItem(value, modeTranslation, availableOptions);
+                }
+                if (key.startsWith('command_option_shortcut') && value) {
+                    addCommandParamsListItem(value, shortcutTranslation, availableOptions);
+                }
+            }
+
+            // Show or hide the available parameters div based on whether params exist
+            availableParamsDiv.style.display = hasParams ? 'block' : 'none';
+        }
+
+        /**
+         * Add list items to the available command argument/options
+         * @param value
+         * @param text
+         * @param elementToAppend
+         * @param name
+         */
+        function addCommandParamsListItem(value, text, elementToAppend, name = false) {
+            // Create the li element and add the text with value into it
+            const paramElementLi = document.createElement('li');
+            paramElementLi.classList.add('my-1');
+            paramElementLi.innerHTML = (name ? `<strong>${value}: </strong>` : `<em>${text}: </em>` + value);
+            if (!name) {
+                // If name is false we want to create a sub ul element under the argument/option name
+                const paramElementUl = document.createElement('ul');
+                paramElementUl.appendChild(paramElementLi);
+                elementToAppend.appendChild(paramElementUl);
+            } else {
+                elementToAppend.appendChild(paramElementLi);
+            }
+        }
+
+    </script>
+{% endblock %}
+
+{% block body %}
+    <div class="row align-items-center">
+        <div class="mt-3">
+            <form method="post" action="{{ path('command_schedule') }}" name="command-schedule">
+                <label for="command_select">{{ 'command.select.label'|trans }}:</label>
+                <select id="command_select" class="form-select" name="command-schedule[command]" required="required">
+                    <option value="">{{ 'command.select'|trans }}</option>
+                    {% for command in commands %}
+                        <option value="{{ command.name }}"
+                                {% for key, argument in command.definition.arguments %}
+                                    {% if argument.required %}
+                                        {% set argumentMode = 'REQUIRED' %}
+                                    {% elseif argument.array %}
+                                        {% set argumentMode = 'IS_ARRAY' %}
+                                    {% else %}
+                                        {% set argumentMode = 'OPTIONAL' %}
+                                    {% endif %}
+                                    data-command_argument_name_{{ key }}="{{ argument.name }}"
+                                    data-command_argument_description_{{ key }}="{{ argument.description }}"
+                                    data-command_argument_mode_{{ key }}="{{ argumentMode }}"
+                                {% endfor %}
+                                {% for key, option in command.definition.options %}
+                                    {% if option.valueRequired %}
+                                        {% set optionMode = 'VALUE_REQUIRED' %}
+                                    {% elseif option.valueOptional %}
+                                        {% set optionMode = 'VALUE_OPTIONAL' %}
+                                    {% elseif option.array %}
+                                        {% set optionMode = 'VALUE_IS_ARRAY' %}
+                                    {% elseif option.negatable %}
+                                        {% set optionMode = 'VALUE_NEGATABLE' %}
+                                    {% else %}
+                                        {% set optionMode = 'VALUE_NONE' %}
+                                    {% endif %}
+                                    data-command_option_name_{{ key }}="{{ option.name }}"
+                                    data-command_option_description_{{ key }}="{{ option.description }}"
+                                    data-command_option_mode_{{ key }}="{{ optionMode }}"
+                                    data-command_option_shortcut_{{ key }}="{{ option.shortcut }}"
+                                {% endfor %}
+                        >
+                            {{ command.name }} - {{ command.description }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <div class="my-3">
+                    <label for="command_params">{{ 'command.params.label'|trans }}:</label>
+                    <input id="command_params" name="command-schedule[params]" type="text" class="form-control">
+                </div>
+
+                <div id="command_available_params" style="display: none;">
+                    {{ 'command.available'|trans }} {{ 'command.arguments'|trans }}:
+                    <ul id="command_available_arguments"></ul>
+                    {{ 'command.available'|trans }} {{ 'command.options'|trans }}:
+                    <ul id="command_available_options"></ul>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <button class="btn btn-success">{{ 'command.schedule.job'|trans }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="params-translations" style="display: none;"
+         data-argument="{{ 'command.argument'|trans }}"
+         data-option="{{ 'command.option'|trans }}"
+         data-description="{{ 'command.description'|trans }}"
+         data-mode="{{ 'command.mode'|trans }}"
+         data-shortcut="{{ 'command.shortcut'|trans }}"
+    ></div>
+{% endblock %}
