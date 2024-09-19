@@ -25,7 +25,7 @@ class JobController extends AbstractController
      * @return Response
      * @throws EntityNotFoundException
      */
-    #[Route(path: '/{id}', name: 'job_queue_detail')]
+    #[Route(path: '/{id<\d+>}', name: 'job_queue_detail')]
     public function detail(int $id): Response
     {
         /** @var Job $job */
@@ -51,7 +51,7 @@ class JobController extends AbstractController
      * @param string|null $name - Related entity class name (self::class)
      * @return Response
      */
-    #[Route(path: '/list/{id}/{name}', name: 'job_queue_list')]
+    #[Route(path: '/list/{id?}/{name?}', name: 'job_queue_list')]
     public function list(?int $id = null, string $name = null): Response
     {
         $entity = null;
