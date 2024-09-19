@@ -20,6 +20,8 @@
 </div>
 
 <main id="main" class="container">
+    {# Shows flash messages #}
+    {% include '@JobQueue/messages.html.twig' %}
     {% block body %}{% endblock %}
 </main>
 
