@@ -4,7 +4,7 @@
 
 {% block header %}
     <div class="row align-items-center mt-4">
-        <div class="col-10 my-2">
+        <div class="col-8 my-2">
             <h1>{{ 'job.job_list'|trans }}
                 {% if relatedEntity is not empty %}
                     {{ 'job.header.for'|trans }} <strong>{{ relatedEntity }}</strong>
@@ -13,7 +13,7 @@
                 {% endif %}
             </h1>
         </div>
-        <div class="col text-end">
+        <div class="col-4 text-end">
             <a href="{{ path('command') }}" class="btn btn-primary" role="button">
                 {{ 'job.create_job'|trans }}
             </a>
