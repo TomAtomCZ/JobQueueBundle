@@ -3,10 +3,10 @@
 namespace TomAtom\JobQueueBundle\Entity;
 
 use DateInterval;
-use TomAtom\JobQueueBundle\Repository\JobRepository;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use TomAtom\JobQueueBundle\Repository\JobRepository;
 
 #[ORM\Entity(repositoryClass: JobRepository::class)]
 #[ORM\Table(name: "job_queue")]
@@ -19,37 +19,37 @@ class Job
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: "integer")]
+    #[ORM\Column(type: Types::INTEGER)]
     private ?int $id;
 
-    #[ORM\Column(type: "string", length: 255)]
+    #[ORM\Column(length: 255)]
     private ?string $status;
 
-    #[ORM\Column(type: "string", length: 100)]
+    #[ORM\Column(length: 255)]
     private ?string $command;
 
-    #[ORM\Column(type: "simple_array")]
-    private string|array|null $commandParams;
+    #[ORM\Column(type: Types::SIMPLE_ARRAY, nullable: true)]
+    private string|array|null $commandParams = null;
 
-    #[ORM\Column(type: "integer", nullable: true)]
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
     private ?int $relatedEntityId = null;
 
-    #[ORM\Column(type: "string", nullable: true)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $relatedEntityClassName = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private string|array|null $output = null;
 
-    #[ORM\Column(type: "datetime_immutable")]
+    #[ORM\Column(type: Types::DATE_IMMUTABLE)]
     private ?DateTimeImmutable $createdAt;
 
-    #[ORM\Column(type: "datetime_immutable", nullable: true)]
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
     private ?DateTimeImmutable $startedAt = null;
 
-    #[ORM\Column(type: "datetime_immutable", nullable: true)]
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
     private ?DateTimeImmutable $closedAt = null;
 
-    #[ORM\Column(type: "dateinterval", nullable: true)]
+    #[ORM\Column(type: Types::DATEINTERVAL, nullable: true)]
     private ?DateInterval $runtime = null;
 
     public function __construct()
