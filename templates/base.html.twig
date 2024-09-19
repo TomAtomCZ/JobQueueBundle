@@ -1,5 +1,30 @@
-{% block title %}{% endblock %}
+<!DOCTYPE html>
+<html lang="{{ app.locale }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{% block title %}{% endblock %}</title>
+    {% block icons %}
+        <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}"/>
+    {% endblock %}
+    {% block stylesheets %}
+        <link rel="stylesheet" href="{{ asset('/css/bootstrap.min.css') }}">
+    {% endblock %}
+</head>
 
-{% block header %}{% endblock %}
+<body>
+<div class="container">
+    <header>
+        {% block header %}{% endblock %}
+    </header>
+</div>
 
-{% block body %}{% endblock %}
+<main id="main" class="container">
+    {% block body %}{% endblock %}
+</main>
+
+{% block javascripts %}
+{% endblock %}
+
+</body>
+</html>

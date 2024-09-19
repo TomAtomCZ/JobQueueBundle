@@ -1,4 +1,4 @@
-{% extends 'base.html.twig' %}
+{% extends '@JobQueue/base.html.twig' %}
 
 {% block title %}{{ 'job.list.title'|trans }}{% endblock %}
 
@@ -40,7 +40,7 @@
                 <td>{{ job.createdAt|date('d.m.Y H:i:s') }}</td>
                 <td>{{ job.status }}</td>
                 <td class="text-right">
-                    <a href="{{ url('job_queue_detail', {id: job.id}) }}" class="btn btn-sm btn-info" role="button">
+                    <a href="{{ url('job_queue_detail', {id: job.id}) }}" class="btn btn-sm btn-secondary" role="button">
                         {{ 'job.detail'|trans }}
                     </a>
                 </td>
