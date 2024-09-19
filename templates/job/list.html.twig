@@ -1,17 +1,22 @@
 {% extends '@JobQueue/base.html.twig' %}
 
-{% block title %}{{ 'job.list.title'|trans }}{% endblock %}
+{% block title %}{{ 'job.job_list'|trans }}{% endblock %}
 
 {% block header %}
-    <div class="row align-items-center">
+    <div class="row align-items-center mt-4">
         <div class="col-10 my-2">
-            <h1>{{ 'job.list.title'|trans }}
+            <h1>{{ 'job.job_list'|trans }}
                 {% if relatedEntity is not empty %}
                     {{ 'job.header.for'|trans }} <strong>{{ relatedEntity }}</strong>
                 {% elseif relatedEntity is empty and relatedEntityId is not empty %}
-                    {{ 'job.header.for.entity.with.id'|trans ~ ' ' ~ relatedEntityId }}
+                    {{ 'job.header.for_entity_with_id'|trans ~ ' ' ~ relatedEntityId }}
                 {% endif %}
             </h1>
+        </div>
+        <div class="col text-end">
+            <a href="{{ path('command') }}" class="btn btn-primary" role="button">
+                {{ 'job.create_job'|trans }}
+            </a>
         </div>
     </div>
 {% endblock %}
@@ -22,7 +27,7 @@
         <tr>
             <th>{{ 'job.command'|trans }}</th>
             {% if relatedEntityId is empty %}
-                <th>{{ 'job.list.related.entity'|trans }}</th>
+                <th>{{ 'job.list.related_entity'|trans }}</th>
             {% endif %}
             <th>{{ 'job.created'|trans }}</th>
             <th>{{ 'job.state'|trans }}</th>
@@ -40,8 +45,8 @@
                 <td>{{ job.createdAt|date('d.m.Y H:i:s') }}</td>
                 <td>{{ job.status }}</td>
                 <td class="text-right">
-                    <a href="{{ url('job_queue_detail', {id: job.id}) }}" class="btn btn-sm btn-secondary" role="button">
-                        {{ 'job.detail'|trans }}
+                    <a href="{{ path('job_queue_detail', {id: job.id}) }}" class="btn btn-sm btn-secondary"
+                       role="button">{{ 'job.detail.self'|trans }}
                     </a>
                 </td>
             </tr>

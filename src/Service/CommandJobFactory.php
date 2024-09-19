@@ -39,7 +39,7 @@ class CommandJobFactory
     {
         // Check if the same exact job exists, throw exception if it does
         if ($this->entityManager->getRepository(Job::class)->isAlreadyCreated($commandName, $params)) {
-            throw new CommandJobException($this->translator->trans('job.already.exists'));
+            throw new CommandJobException($this->translator->trans('job.already_exists'));
         }
 
         // Save init data of the job to db

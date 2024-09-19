@@ -3,20 +3,23 @@
 {% block title %}{{ 'job.detail.title'|trans }}{% endblock %}
 
 {% block header %}
-    <div class="row align-items-center">
+    <div class="row align-items-center mt-4">
         <div class="col-10 my-2">
             <h1>{{ 'job.detail.title'|trans }} {{ job.id }}
                 {% if relatedEntity is not empty %}
                     {{ 'job.header.for'|trans }} <strong>{{ relatedEntity }}</strong>
                 {% elseif relatedEntity is empty and job.relatedEntityId is not empty %}
-                    {{ 'job.header.for.entity.with.id'|trans ~ ' ' ~ job.relatedEntityId }}
+                    {{ 'job.header.for_entity_with_id'|trans ~ ' ' ~ job.relatedEntityId }}
                 {% endif %}
             </h1>
         </div>
-        <div class="col text-right">
-            <a href="{{ url('job_queue_list', {id: job.relatedEntityId is not empty ? job.relatedEntityId : null, name: relatedEntity is not empty ? relatedEntity.class : null}) }}"
+        <div class="col text-end">
+            <a href="{{ path('job_queue_list', {id: job.relatedEntityId is not empty ? job.relatedEntityId : null, name: relatedEntity is not empty ? relatedEntity.class : null}) }}"
                class="btn btn-secondary" role="button">
-                {{ 'job.detail.back.to.list'|trans }}
+                {{ 'job.job_list'|trans }}
+            </a>
+            <a href="{{ path('command') }}" class="btn btn-primary" role="button">
+                {{ 'job.create_job'|trans }}
             </a>
         </div>
     </div>
@@ -32,7 +35,7 @@
             <th>{{ 'job.state'|trans }}</th>
             <td>
                 {{ job.status }}
-                <a href="{{ url('job_queue_detail', {id: job.id}) }}" class="btn btn-sm btn-danger ml-5" role="button">
+                <a href="{{ path('job_queue_detail', {id: job.id}) }}" class="btn btn-sm btn-danger ms-2" role="button">
                     {{ 'job.detail.refresh'|trans }}
                 </a>
             </td>
@@ -55,7 +58,7 @@
     </table>
 
     {% if job.output is not empty %}
-        <h3>{{ 'job.detail.output'|trans }}</h3>
+        <h3 class="mb-3">{{ 'job.detail.output'|trans }}</h3>
         <pre style="overflow:auto;">{{ job.output }}</pre>
     {% endif %}
 {% endblock %}
