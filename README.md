@@ -31,9 +31,7 @@ TomAtom\JobQueueBundle\JobQueueBundle::class => ['all' => true]
 
 ```yaml
 job_queue:
-  resource:
-    path: '../vendor/tomatom/jobqueuebundle/src/Controller'
-    namespace: TomAtom\JobQueueBundle\Controller
+  resource: "@JobQueueBundle/src/Controller/"
   type: attribute
 ```
 
@@ -67,7 +65,6 @@ or via migrations if you are using them.
 
 #### Manually creating the jobs in your application:
 
-
 The function __createCommandJob__ from __CommandJobFactory__ accepts:
 
 * command name,
@@ -99,6 +96,7 @@ return $this->redirectToRoute('job_queue_detail', ['id' => $job->getId()]);
 ```
 
 #### Creating jobs via the browser interface:
+
 On the url __/command__ you can schedule all commands from your application (Symfony ones included):
 
 ![img_schedule_command.png](docs/img_schedule_command.png)
@@ -111,7 +109,7 @@ On the url __/job/{id}__ you can see the detail of each job
 
 ![img_job_detail.png](docs/img_job_detail.png)
 
-Note - the design will probably change for the better, but you can create your own. 
+Note - the design will probably change for the better, but you can create your own.
 
 Extending the templates can be done like this:
 
@@ -179,7 +177,9 @@ command:
 ```
 
 ## TODO:
+
 Add configuration for things such as table name
 
 ## Contributing:
+
 Feel free to open any issues or pull requests if you find something wrong or missing what you'd like the bundle to have!
