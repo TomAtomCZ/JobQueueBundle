@@ -18,9 +18,11 @@
                class="btn btn-secondary" role="button">
                 {{ 'job.job_list'|trans }}
             </a>
+            {% if commandRouteAvailable %}
             <a href="{{ path('command') }}" class="btn btn-primary" role="button">
                 {{ 'job.create_job'|trans }}
             </a>
+            {% endif %}
         </div>
     </div>
 {% endblock %}

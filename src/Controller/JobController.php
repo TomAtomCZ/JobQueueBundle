@@ -42,7 +42,8 @@ class JobController extends AbstractController
 
         return $this->render('@JobQueue/job/detail.html.twig', [
             'job' => $job,
-            'relatedEntity' => $entity
+            'relatedEntity' => $entity,
+            'commandRouteAvailable' => $this->isCommandControllerRouteAvailable(),
         ]);
     }
 
@@ -77,6 +78,17 @@ class JobController extends AbstractController
             'jobs' => $jobs,
             'relatedEntityId' => $id,
             'relatedEntity' => $entity,
+            'commandRouteAvailable' => $this->isCommandControllerRouteAvailable(),
         ]);
+    }
+
+    private function isCommandControllerRouteAvailable(): bool
+    {
+        try {
+            $this->generateUrl('command_schedule');
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 }

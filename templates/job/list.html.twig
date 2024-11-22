@@ -13,11 +13,13 @@
                 {% endif %}
             </h1>
         </div>
+        {% if commandRouteAvailable %}
         <div class="col-4 text-end">
             <a href="{{ path('command') }}" class="btn btn-primary" role="button">
                 {{ 'job.create_job'|trans }}
             </a>
         </div>
+        {% endif %}
     </div>
 {% endblock %}
 
