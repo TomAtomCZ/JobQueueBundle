@@ -7,10 +7,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use TomAtom\JobQueueBundle\Entity\Job;
 
 /**
- * @method Job|null find($id, $lockMode = null, $lockVersion = null)
- * @method Job|null findOneBy(array $criteria, array $orderBy = null)
- * @method Job[]    findAll()
- * @method Job[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @extends ServiceEntityRepository<Job>
  */
 class JobRepository extends ServiceEntityRepository
 {
@@ -19,27 +16,16 @@ class JobRepository extends ServiceEntityRepository
         parent::__construct($registry, Job::class);
     }
 
-    public function save(Job $entity, bool $flush = false): void
-    {
-        $this->getEntityManager()->persist($entity);
-
-        if ($flush) {
-            $this->getEntityManager()->flush();
-        }
-    }
-
-    public function remove(Job $entity, bool $flush = false): void
-    {
-        $this->getEntityManager()->remove($entity);
-
-        if ($flush) {
-            $this->getEntityManager()->flush();
-        }
-    }
-
+    /**
+     * Checks if job with the same command, parameters and status {@see Job::STATUS_PLANNED} exists
+     * @param string $command
+     * @param array $params
+     * @return bool
+     */
     public function isAlreadyCreated(string $command, array $params): bool
     {
-        $isCreated = $this->createQueryBuilder('j')
+        $result = $this->createQueryBuilder('j')
+            ->select('1')
             ->where('j.status = :status')
             ->setParameter('status', Job::STATUS_PLANNED)
             ->andWhere('j.command = :command')
@@ -47,12 +33,8 @@ class JobRepository extends ServiceEntityRepository
             ->andWhere('j.commandParams = :commandParams')
             ->setParameter('commandParams', trim(implode(',', $params)))
             ->getQuery()
-            ->getResult();
+            ->getOneOrNullResult();
 
-        if (!empty($isCreated)) {
-            return true;
-        }
-
-        return false;
+        return $result !== null;
     }
 }
