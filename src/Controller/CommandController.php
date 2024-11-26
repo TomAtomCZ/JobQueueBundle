@@ -10,34 +10,37 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use TomAtom\JobQueueBundle\Exception\CommandJobException;
 use TomAtom\JobQueueBundle\Service\CommandJobFactory;
 
+#[IsGranted('ROLE_JQB_JOB_CREATE')]
+#[Route(path: '/command')]
 class CommandController extends AbstractController
 {
-    #[Route(path: '/command', name: 'command')]
-    public function detail(KernelInterface $kernel): Response
+    #[Route(path: '/schedule', name: 'command_schedule')]
+    public function schedule(KernelInterface $kernel): Response
     {
+        // Get all app commands to run except for symfony _complete and completion ones
         $application = new Application($kernel);
         $commands = $application->all();
         unset($commands['_complete'], $commands['completion']);
         ksort($commands);
-        return $this->render('@JobQueue/command/run.html.twig', [
+        return $this->render('@JobQueue/command/schedule.html.twig', [
             'commands' => $commands
         ]);
     }
 
-    /**
-     * @throws CommandJobException
-     */
-    #[Route(path: '/command-schedule', name: 'command_schedule')]
-    public function scheduleCommandJob(Request $request, CommandJobFactory $commandJobFactory, TranslatorInterface $translator): Response
+    #[Route(path: '/schedule-run', name: 'command_schedule_run')]
+    public function scheduleRun(Request $request, CommandJobFactory $commandJobFactory, TranslatorInterface $translator): Response
     {
         $commandScheduleRequest = $request->get('command-schedule');
         $commandName = $commandScheduleRequest['command'];
         if (empty($commandScheduleRequest['command'])) {
-            throw new CommandJobException('Command name is required.');
+            // Redirect back to the command schedule if somehow missing command name
+            $this->addFlash('danger', $translator->trans('command.schedule.job.error.name'));
+            return $this->redirectToRoute('command_schedule');
         }
 
         // Get the command's params
@@ -46,7 +49,7 @@ class CommandController extends AbstractController
             $params = trim($params);
             $params = explode(' ', $params);
             foreach ($params as $key => $param) {
-                if ($param === "" || $param === null) {
+                if ($param === '' || $param === null) {
                     // Unset non-valid params
                     unset($params[$key]);
                 }
@@ -59,7 +62,7 @@ class CommandController extends AbstractController
         } catch (OptimisticLockException|ORMException|CommandJobException $e) {
             // Redirect back to the command schedule
             $this->addFlash('danger', $translator->trans('job.creation.error') . ' - ' . $e->getMessage() . '.');
-            return $this->redirectToRoute('command');
+            return $this->redirectToRoute('command_schedule');
         }
 
         // Redirect to the command job detail

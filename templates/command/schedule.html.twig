@@ -7,12 +7,14 @@
         <div class="col-8 my-2">
             <h1>{{ 'command.schedule.job'|trans }}</h1>
         </div>
-        <div class="col-4 text-end">
-            <a href="{{ path('job_queue_list') }}"
-               class="btn btn-secondary" role="button">
-                {{ 'job.job_list'|trans }}
-            </a>
-        </div>
+        {% if is_granted('ROLE_JQB_JOB_LIST') %}
+            <div class="col-4 text-end">
+                <a href="{{ path('job_queue_list') }}"
+                   class="btn btn-secondary" role="button">
+                    {{ 'job.job_list'|trans }}
+                </a>
+            </div>
+        {% endif %}
     </div>
 {% endblock %}
 
@@ -112,7 +114,7 @@
 {% block body %}
     <div class="row align-items-center">
         <div class="mt-3">
-            <form method="post" action="{{ path('command_schedule') }}" name="command-schedule">
+            <form method="post" action="{{ path('command_schedule_run') }}" name="command-schedule">
                 <label for="command_select">{{ 'command.select.label'|trans }}:</label>
                 <select id="command_select" class="form-select" name="command-schedule[command]" required="required">
                     <option value="">{{ 'command.select'|trans }}</option>

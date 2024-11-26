@@ -18,10 +18,11 @@
     "doctrine/doctrine-bundle": "^2",
     "doctrine/orm": "^2|^3",
     "symfony/framework-bundle": "^6.4",
+    "symfony/security-bundle": "^6.4",
     "symfony/messenger": "^6.4",
     "symfony/process": "^6.4",
     "symfony/translation": "^6.4",
-    "twig/twig": "^3"
+    "twig/twig": "^2|^3"
   },
   "autoload": {
     "psr-4": {

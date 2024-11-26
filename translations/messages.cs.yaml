@@ -32,6 +32,7 @@ command:
   select: "Vyberte příkaz k provedení"
   select.label: "Příkaz"
   schedule.job: "Naplánovat příkazovou úlohu"
+  schedule.job.error.name: "Název příkazu je povinný"
   params.label: "Napište parametry příkazu, jak byste je normálně zadali v konzoli"
   available: "Dostupný příkaz"
   argument: "Argument"
