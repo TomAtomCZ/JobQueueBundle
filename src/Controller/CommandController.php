@@ -66,8 +66,16 @@ class CommandController extends AbstractController
             return $this->redirectToRoute('command_schedule');
         }
 
-        // Redirect to the command job detail
         $this->addFlash('success', $translator->trans('job.creation.success'));
-        return $this->redirectToRoute('job_queue_detail', ['id' => $job->getId()]);
+
+        // Redirect to the command job detail or list if is granted
+        if ($this->isGranted(JobQueuePermissions::ROLE_JOB_READ)) {
+            return $this->redirectToRoute('job_queue_detail', ['id' => $job->getId()]);
+        } elseif ($this->isGranted(JobQueuePermissions::ROLE_JOB_LIST)) {
+            return $this->redirectToRoute('job_queue_list');
+        }
+
+        // Return back to schedule otherwise
+        return $this->redirectToRoute('command_schedule');
     }
 }
