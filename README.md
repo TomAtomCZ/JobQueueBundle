@@ -11,7 +11,7 @@
 * symfony/messenger: ^6.4
 * symfony/process: ^6.4
 * symfony/translation: ^6.4
-* twig/twig: ^3
+* twig/twig: ^2|^3
 
 ## Installation:
 
@@ -27,6 +27,8 @@ composer require tomatom/jobqueuebundle
 TomAtom\JobQueueBundle\JobQueueBundle::class => ['all' => true]
 ```
 
+<hr>
+
 #### config/routes.yaml:
 
 ```yaml
@@ -34,6 +36,8 @@ job_queue:
   resource: "@JobQueueBundle/src/Controller/"
   type: attribute
 ```
+
+<hr>
 
 #### config/packages/messenger.yaml:
 
@@ -52,6 +56,57 @@ framework:
     routing:
       'TomAtom\JobQueueBundle\Message\JobMessage': job_message # or async
 ```
+
+<hr>
+
+#### config/packages/security.yaml:
+
+The bundle uses the role security system to control access for the jobs/command scheduling. You can assign roles based
+on the
+level of access you want to grant to each user.
+
+Available roles are:
+
+**ROLE_JQB_ALL** - The main role with full permissions. Provides unrestricted access to all features of
+the bundle.
+
+**ROLE_JQB_JOBS** - Grants full permissions for jobs (JOB_ roles).
+
+**ROLE_JQB_COMMANDS** - Grants full permissions for command scheduling (COMMAND_ roles).
+
+**ROLE_JQB_JOB_LIST** - Allows access to view the job list.
+
+**ROLE_JQB_JOB_READ** - Allows access to view job details.
+
+**ROLE_JQB_JOB_CREATE** - Allows creating new jobs.
+
+**ROLE_JQB_JOB_DELETE** - Allows deleting jobs.
+
+**ROLE_JQB_COMMAND_SCHEDULE** - Allows scheduling commands.
+
+(Also with constants in [JobQueuePermissions.php](src/Security/JobQueuePermissions.php))
+
+To grant full access to users, add **ROLE_JQB_ALL** to the role hierarchy:
+
+```yaml
+security:
+  role_hierarchy:
+    ROLE_ADMIN:
+      - ROLE_JQB_ALL
+```
+
+To restrict access for example to only viewing the job list and job details (without creation or scheduling), configure
+the roles like this:
+
+```yaml
+security:
+  role_hierarchy:
+    ROLE_USER:
+      - ROLE_JQB_JOB_LIST
+      - ROLE_JQB_JOB_READ
+```
+
+<hr>
 
 #### Update your database so the __'job_queue'__ table is created
 
@@ -155,16 +210,18 @@ job:
     hours: "hours"
     minutes: "minutes"
     seconds: "seconds"
-  already_exists: "The same job is already planned."
   creation:
-    success: "Job successfully planned."
+    success: "Job successfully planned"
     error: "An error occurred while planning the job"
+    error_security: "You do not have permission for creating jobs"
+    error_already_exists: "The same job is already planned"
 
 command:
   title: "Command schedule"
   select: "Select a command to run"
   select.label: "Command"
   schedule.job: "Schedule command job"
+  schedule.job.error.name: "Command name is required"
   params.label: "Write the command's parameters as you would normally in the console"
   available: "Available command"
   argument: "Argument"
@@ -178,7 +235,8 @@ command:
 
 ## TODO:
 
-Add configuration for things such as table name
+Add configuration for things such as table name?<br>
+Add logging
 
 ## Contributing:
 
