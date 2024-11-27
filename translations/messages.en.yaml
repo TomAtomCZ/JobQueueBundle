@@ -22,10 +22,11 @@ job:
     hours: "hours"
     minutes: "minutes"
     seconds: "seconds"
-  already_exists: "The same job is already planned."
   creation:
-    success: "Job successfully planned."
+    success: "Job successfully planned"
     error: "An error occurred while planning the job"
+    error_security: "You do not have permission for creating jobs"
+    error_already_exists: "The same job is already planned"
 
 command:
   title: "Command schedule"

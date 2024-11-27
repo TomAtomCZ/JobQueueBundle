@@ -7,7 +7,7 @@
         <div class="col-8 my-2">
             <h1>{{ 'command.schedule.job'|trans }}</h1>
         </div>
-        {% if is_granted('ROLE_JQB_JOB_LIST') %}
+        {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_JOB_LIST')) %}
             <div class="col-4 text-end">
                 <a href="{{ path('job_queue_list') }}"
                    class="btn btn-secondary" role="button">
@@ -19,6 +19,7 @@
 {% endblock %}
 
 {% block javascripts %}
+    {{ parent() }}
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // Update available command params on load
@@ -41,11 +42,6 @@
             const availableArguments = document.getElementById('command_available_arguments');
             const availableOptions = document.getElementById('command_available_options');
             const paramsTranslationsDivDataset = document.getElementById('params-translations').dataset;
-            const argumentTranslation = paramsTranslationsDivDataset.argument;
-            const optionTranslation = paramsTranslationsDivDataset.option;
-            const descriptionTranslation = paramsTranslationsDivDataset.description;
-            const modeTranslation = paramsTranslationsDivDataset.mode;
-            const shortcutTranslation = paramsTranslationsDivDataset.shortcut;
 
             // Empty the div before updating
             availableArguments.innerHTML = '';
@@ -58,27 +54,27 @@
             for (const [key, value] of Object.entries(command.dataset)) {
                 // Check which key the command starts with and display the given value
                 if (key.startsWith('command_argument_name') && value) {
-                    addCommandParamsListItem(value, argumentTranslation, availableArguments, true);
+                    addCommandParamsListItem(value, paramsTranslationsDivDataset.argument, availableArguments, true);
                     hasParams = true;
                 }
                 if (key.startsWith('command_argument_description') && value) {
-                    addCommandParamsListItem(value, descriptionTranslation, availableArguments);
+                    addCommandParamsListItem(value, paramsTranslationsDivDataset.description, availableArguments);
                 }
                 if (key.startsWith('command_argument_mode') && value) {
-                    addCommandParamsListItem(value, modeTranslation, availableArguments);
+                    addCommandParamsListItem(value, paramsTranslationsDivDataset.mode, availableArguments);
                 }
                 if (key.startsWith('command_option_name') && value) {
-                    addCommandParamsListItem(value, optionTranslation, availableOptions, true);
+                    addCommandParamsListItem(value, paramsTranslationsDivDataset.option, availableOptions, true);
                     hasParams = true;
                 }
                 if (key.startsWith('command_option_description') && value) {
-                    addCommandParamsListItem(value, descriptionTranslation, availableOptions);
+                    addCommandParamsListItem(value, paramsTranslationsDivDataset.description, availableOptions);
                 }
                 if (key.startsWith('command_option_mode') && value) {
-                    addCommandParamsListItem(value, modeTranslation, availableOptions);
+                    addCommandParamsListItem(value, paramsTranslationsDivDataset.mode, availableOptions);
                 }
                 if (key.startsWith('command_option_shortcut') && value) {
-                    addCommandParamsListItem(value, shortcutTranslation, availableOptions);
+                    addCommandParamsListItem(value, paramsTranslationsDivDataset.shortcut, availableOptions);
                 }
             }
 

@@ -6,23 +6,27 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use TomAtom\JobQueueBundle\Entity\Job;
 use TomAtom\JobQueueBundle\Exception\CommandJobException;
 use TomAtom\JobQueueBundle\Message\JobMessage;
+use TomAtom\JobQueueBundle\Security\JobQueuePermissions;
 
 class CommandJobFactory
 {
     private EntityManager $entityManager;
     private MessageBusInterface $messageBus;
     private TranslatorInterface $translator;
+    private Security $security;
 
-    public function __construct(EntityManagerInterface $entityManager, MessageBusInterface $bus, TranslatorInterface $translator)
+    public function __construct(EntityManagerInterface $entityManager, MessageBusInterface $bus, TranslatorInterface $translator, Security $security)
     {
         $this->entityManager = $entityManager;
         $this->messageBus = $bus;
         $this->translator = $translator;
+        $this->security = $security;
     }
 
     /**
@@ -37,9 +41,13 @@ class CommandJobFactory
      */
     public function createCommandJob(string $commandName, array $params, int $entityId = null, string $entityClassName = null): Job
     {
+        if (!$this->security->isGranted(JobQueuePermissions::ROLE_JOB_CREATE)) {
+            throw new CommandJobException($this->translator->trans('job.creation.error_security'));
+        }
+
         // Check if the same exact job exists, throw exception if it does
         if ($this->entityManager->getRepository(Job::class)->isAlreadyCreated($commandName, $params)) {
-            throw new CommandJobException($this->translator->trans('job.already_exists'));
+            throw new CommandJobException($this->translator->trans('job.creation.error_already_exists'));
         }
 
         // Save init data of the job to db

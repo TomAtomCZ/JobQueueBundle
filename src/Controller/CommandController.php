@@ -13,9 +13,10 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use TomAtom\JobQueueBundle\Exception\CommandJobException;
+use TomAtom\JobQueueBundle\Security\JobQueuePermissions;
 use TomAtom\JobQueueBundle\Service\CommandJobFactory;
 
-#[IsGranted('ROLE_JQB_JOB_CREATE')]
+#[IsGranted(JobQueuePermissions::ROLE_COMMAND_SCHEDULE)]
 #[Route(path: '/command')]
 class CommandController extends AbstractController
 {

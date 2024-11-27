@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use TomAtom\JobQueueBundle\Entity\Job;
+use TomAtom\JobQueueBundle\Security\JobQueuePermissions;
 
 #[Route(path: '/job')]
 class JobController extends AbstractController
@@ -26,7 +27,7 @@ class JobController extends AbstractController
      * @return Response
      * @throws EntityNotFoundException
      */
-    #[IsGranted('ROLE_JQB_JOB_READ')]
+    #[IsGranted(JobQueuePermissions::ROLE_JOB_READ)]
     #[Route(path: '/{id<\d+>}', name: 'job_queue_detail')]
     public function detail(int $id): Response
     {
@@ -53,7 +54,7 @@ class JobController extends AbstractController
      * @param string|null $name - Related entity class name (self::class)
      * @return Response
      */
-    #[IsGranted('ROLE_JQB_JOB_LIST')]
+    #[IsGranted(JobQueuePermissions::ROLE_JOB_LIST)]
     #[Route(path: '/list/{id?}/{name?}', name: 'job_queue_list')]
     public function list(?int $id = null, string $name = null): Response
     {

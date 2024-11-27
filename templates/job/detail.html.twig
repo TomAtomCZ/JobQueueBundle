@@ -14,13 +14,13 @@
             </h1>
         </div>
         <div class="col-4 text-end">
-            {% if is_granted('ROLE_JQB_JOB_LIST') %}
+            {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_JOB_LIST')) %}
                 <a href="{{ path('job_queue_list', {id: job.relatedEntityId is not empty ? job.relatedEntityId : null, name: relatedEntity is not empty ? relatedEntity.class : null}) }}"
                    class="btn btn-secondary" role="button">
                     {{ 'job.job_list'|trans }}
                 </a>
             {% endif %}
-            {% if is_granted('ROLE_JQB_JOB_CREATE') %}
+            {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_COMMAND_SCHEDULE')) %}
                 <a href="{{ path('command_schedule') }}" class="btn btn-primary" role="button">
                     {{ 'job.create_job'|trans }}
                 </a>

@@ -22,10 +22,11 @@ job:
     hours: "hodin"
     minutes: "minut"
     seconds: "sekund"
-  already_exists: "Stejná úloha je již naplánovaná."
   creation:
-    success: "Úloha úspěšně naplánována."
+    success: "Úloha úspěšně naplánována"
     error: "Došlo k chybě při plánování úlohy"
+    error_security: "Nemáte práva pro vytváření úloh"
+    error_already_exists: "Stejná úloha je již naplánovaná"
 
 command:
   title: "Plánování příkazu"
