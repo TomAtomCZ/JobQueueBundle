@@ -3,6 +3,8 @@ job:
   create_job: "Create job"
   detail:
     self: "Detail"
+    parent: "Parent job"
+    child: "Child job"
     title: "Planned job"
     refresh: "Refresh"
     runtime: "Runtime"

@@ -3,6 +3,8 @@ job:
   create_job: "Vytvořit úlohu"
   detail:
     self: "Detail"
+    parent: "Nadřazená úloha"
+    child: "Podřazená úloha"
     title: "Plánovaná úloha"
     refresh: "Obnovit"
     runtime: "Čas běhu"

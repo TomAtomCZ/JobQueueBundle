@@ -51,6 +51,12 @@
                         <a href="{{ path('job_queue_detail', {id: job.id}) }}" class="btn btn-sm btn-secondary"
                            role="button">{{ 'job.detail.self'|trans }}
                         </a>
+                        {% if job.relatedParent is not empty %}
+                            <a href="{{ path('job_queue_detail', {id: job.relatedParent.id}) }}"
+                               class="btn btn-sm btn-success"
+                               role="button">{{ 'job.detail.parent'|trans }} ({{ job.relatedParent.id }})
+                            </a>
+                        {% endif %}
                     {% endif %}
                 </td>
             </tr>

@@ -4,6 +4,8 @@ namespace TomAtom\JobQueueBundle\Entity;
 
 use DateInterval;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use TomAtom\JobQueueBundle\Repository\JobRepository;
@@ -40,6 +42,13 @@ class Job
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private string|array|null $output = null;
 
+    #[ORM\ManyToOne(targetEntity: Job::class, inversedBy: 'relatedChildren')]
+    #[ORM\JoinColumn(name: 'related_parent_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    private ?Job $relatedParent = null;
+
+    #[ORM\OneToMany(targetEntity: Job::class, mappedBy: 'relatedParent')]
+    private Collection|array $relatedChildren;
+
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private ?DateTimeImmutable $createdAt;
 
@@ -55,6 +64,7 @@ class Job
     public function __construct()
     {
         $this->createdAt = new DateTimeImmutable();
+        $this->relatedChildren = new ArrayCollection();
     }
 
     /**
@@ -234,6 +244,42 @@ class Job
     public function setOutput(array|string|null $output): Job
     {
         $this->output = $output;
+        return $this;
+    }
+
+    /**
+     * @return Job|null
+     */
+    public function getRelatedParent(): ?Job
+    {
+        return $this->relatedParent;
+    }
+
+    /**
+     * @param Job|null $relatedParent
+     * @return $this
+     */
+    public function setRelatedParent(?Job $relatedParent): Job
+    {
+        $this->relatedParent = $relatedParent;
+        return $this;
+    }
+
+    /**
+     * @return Collection|array
+     */
+    public function getRelatedChildren(): Collection|array
+    {
+        return $this->relatedChildren;
+    }
+
+    /**
+     * @param Collection|array $relatedChildren
+     * @return $this
+     */
+    public function setRelatedChildren(Collection|array $relatedChildren): Job
+    {
+        $this->relatedChildren = $relatedChildren;
         return $this;
     }
 

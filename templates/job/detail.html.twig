@@ -61,6 +61,22 @@
         {% endif %}
     </table>
 
+    {% if job.relatedParent is not empty %}
+        <a href="{{ path('job_queue_detail', {id: job.relatedParent.id}) }}"
+           class="btn btn btn-success"
+           role="button">{{ 'job.detail.parent'|trans }}
+        </a>
+    {% endif %}
+
+    {% if job.relatedChildren is not empty %}
+        {% for childJob in job.relatedChildren %}
+            <a href="{{ path('job_queue_detail', {id: childJob.id}) }}"
+               class="btn btn btn-success"
+               role="button">{{ 'job.detail.child'|trans }} ({{ childJob.id }})
+            </a>
+        {% endfor %}
+    {% endif %}
+
     {% if job.output is not empty %}
         <h3 class="mb-3">{{ 'job.detail.output'|trans }}</h3>
         <pre style="overflow:auto;">{{ job.output }}</pre>

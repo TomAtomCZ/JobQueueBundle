@@ -30,16 +30,17 @@ class CommandJobFactory
     }
 
     /**
-     * @param string $commandName
-     * @param array $params
+     * @param string $commandName - Command name
+     * @param array $params - Command params
      * @param int|null $entityId - Entity ID
      * @param string|null $entityClassName - Entity class name (self:class)
+     * @param Job|null $parentJob - Parent Job entity
      * @return Job
      * @throws CommandJobException
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function createCommandJob(string $commandName, array $params, int $entityId = null, string $entityClassName = null): Job
+    public function createCommandJob(string $commandName, array $params, int $entityId = null, string $entityClassName = null, Job $parentJob = null): Job
     {
         if (!$this->security->isGranted(JobQueuePermissions::ROLE_JOB_CREATE)) {
             throw new CommandJobException($this->translator->trans('job.creation.error_security'));
@@ -57,6 +58,7 @@ class CommandJobFactory
         $job->setStatus(Job::STATUS_PLANNED);
         $job->setRelatedEntityId($entityId);
         $job->setRelatedEntityClassName($entityClassName);
+        $job->setRelatedParent($parentJob);
 
         $this->entityManager->persist($job);
         $this->entityManager->flush();
