@@ -36,7 +36,7 @@ class JobMessageHandler
         }
 
         // Start the process
-        $process = new Process(explode(' ', $command));
+        $process = Process::fromShellCommandline($command);
         $process->setWorkingDirectory(dirname(__DIR__, 5));
         $process->enableOutput();
         $process->setTimeout(null);
@@ -50,15 +50,41 @@ class JobMessageHandler
 
         // Wait for the process to finish and save the command buffer to the output
         $process->wait(function ($type, $buffer) use ($job): void {
-            $job->setOutput($job->getOutput() . $buffer);
-            $this->entityManager->persist($job);
-            $this->entityManager->flush();
+            $this->processBuffer($job, $buffer);
         });
 
         $job->setStatus($process->isSuccessful() ? Job::STATUS_COMPLETED : Job::STATUS_FAILED);
         $job->setClosedAt(new DateTimeImmutable());
         $job->setRuntime($job->getStartedAt()->diff($job->getClosedAt()));
 
+        $this->entityManager->flush();
+    }
+
+    /**
+     * Processes the buffer and updates the job output and output params
+     * @param Job $job
+     * @param string $buffer
+     * @return void
+     */
+    private function processBuffer(Job $job, string $buffer): void
+    {
+        // Update the output
+        $job->setOutput($job->getOutput() . $buffer);
+        $outputParamsList = [];
+        // Split the buffer into lines - try to find parameters outputted from the buffer to be saved
+        $lines = explode(PHP_EOL, $buffer);
+        foreach ($lines as $line) {
+            $position = strpos($line, Job::COMMAND_OUTPUT_PARAMS);
+            if ($position !== false) {
+                // Extract the parameter
+                $outputParams = trim(substr($line, $position + strlen(Job::COMMAND_OUTPUT_PARAMS)));
+                $outputParamsList[] = $outputParams;
+            }
+        }
+        // Join all found outputted params
+        if (!empty($outputParamsList)) {
+            $job->setOutputParams(implode(', ', $outputParamsList));
+        }
         $this->entityManager->persist($job);
         $this->entityManager->flush();
     }

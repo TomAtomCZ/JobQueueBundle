@@ -18,6 +18,7 @@ class Job
     const STATUS_RUNNING = 'running';
     const STATUS_COMPLETED = 'completed';
     const STATUS_FAILED = 'failed';
+    const COMMAND_OUTPUT_PARAMS = 'OUTPUT PARAMS: ';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -41,6 +42,9 @@ class Job
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private string|array|null $output = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private string|array|null $outputParams = null;
 
     #[ORM\ManyToOne(targetEntity: Job::class, inversedBy: 'relatedChildren')]
     #[ORM\JoinColumn(name: 'related_parent_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
@@ -244,6 +248,24 @@ class Job
     public function setOutput(array|string|null $output): Job
     {
         $this->output = $output;
+        return $this;
+    }
+
+    /**
+     * @return array|string|null
+     */
+    public function getOutputParams(): array|string|null
+    {
+        return $this->outputParams;
+    }
+
+    /**
+     * @param array|string|null $outputParams
+     * @return $this
+     */
+    public function setOutputParams(array|string|null $outputParams): Job
+    {
+        $this->outputParams = $outputParams;
         return $this;
     }
 
