@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+    <entity name="TomAtom\JobQueueBundle\Entity\Job" table="job_queue">
+        <indexes>
+            <index name="IDX_7EA1C213DABB966B" columns="related_parent_id"/>
+        </indexes>
+        <id name="id" type="integer" column="id">
+            <generator strategy="IDENTITY"/>
+        </id>
+        <field name="status" column="status" length="255">
+            <options>
+                <option name="fixed"/>
+            </options>
+        </field>
+        <field name="command" column="command" length="255">
+            <options>
+                <option name="fixed"/>
+            </options>
+        </field>
+        <field name="commandParams" type="simple_array" column="command_params" length="0" nullable="true">
+            <options>
+                <option name="fixed"/>
+            </options>
+        </field>
+        <field name="relatedEntityId" type="integer" column="related_entity_id" nullable="true">
+            <options>
+                <option name="unsigned"/>
+            </options>
+        </field>
+        <field name="relatedEntityClassName" column="related_entity_class_name" length="255"
+               nullable="true">
+            <options>
+                <option name="fixed"/>
+            </options>
+        </field>
+        <field name="output" type="text" column="output" length="0" nullable="true">
+            <options>
+                <option name="fixed"/>
+            </options>
+        </field>
+        <field name="outputParams" type="text" column="output_params" length="0" nullable="true">
+            <options>
+                <option name="fixed"/>
+            </options>
+        </field>
+        <field name="createdAt" type="datetime_immutable" column="created_at"/>
+        <field name="startedAt" type="datetime_immutable" column="started_at" nullable="true"/>
+        <field name="closedAt" type="datetime_immutable" column="closed_at" nullable="true"/>
+        <field name="runtime" type="dateinterval" column="runtime" nullable="true"/>
+        <many-to-one field="relatedParent" target-entity="Job">
+            <join-columns>
+                <join-column name="related_parent_id"/>
+            </join-columns>
+        </many-to-one>
+    </entity>
+</doctrine-mapping>
