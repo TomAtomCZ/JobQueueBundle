@@ -42,7 +42,7 @@ class CommandJobFactory
      */
     public function createCommandJob(string $commandName, array $params, int $entityId = null, string $entityClassName = null, Job $parentJob = null): Job
     {
-        if (!$this->security->isGranted(JobQueuePermissions::ROLE_JOB_CREATE)) {
+        if ($this->security->getUser() && !$this->security->isGranted(JobQueuePermissions::ROLE_JOB_CREATE)) {
             throw new CommandJobException($this->translator->trans('job.creation.error_security'));
         }
 
