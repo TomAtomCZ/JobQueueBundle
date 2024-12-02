@@ -117,8 +117,8 @@
             // Add command parameters to the input after clicking
             document.querySelectorAll('.js-command-add-params').forEach(function (button) {
                 button.addEventListener('click', function () {
-                    if (this.dataset.value && this.dataset.value !== 'false') {
-                        const commandParamsInput = document.getElementById('command_params');
+                    const commandParamsInput = document.getElementById('command_params');
+                    if (this.dataset.value && this.dataset.value !== 'false' && !commandParamsInput.value.includes(this.dataset.value)) {
                         commandParamsInput.value += (commandParamsInput.value === '' ? '' : ' ') + '--' + this.dataset.value + '=';
                     }
                 });
@@ -181,6 +181,7 @@
                     {{ 'command.available'|trans }} {{ 'command.arguments'|trans }}:
                     <ul id="command_available_arguments"></ul>
                     {{ 'command.available'|trans }} {{ 'command.options'|trans }}:
+                    <br><small>- {{ 'command.options.info'|trans }}</small>
                     <ul id="command_available_options"></ul>
                 </div>
 

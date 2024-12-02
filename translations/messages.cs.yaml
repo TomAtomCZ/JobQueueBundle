@@ -49,6 +49,7 @@ command:
   arguments: "argumenty"
   option: "Možnost"
   options: "možnosti"
+  options.info: "Můžete kliknout na název možnosti, aby se automaticky přidali do vstupních parametrů příkazu"
   description: "Popis"
   mode: "Režim"
   shortcut: "Zkratka"
