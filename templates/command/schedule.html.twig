@@ -54,7 +54,7 @@
             for (const [key, value] of Object.entries(command.dataset)) {
                 // Check which key the command starts with and display the given value
                 if (key.startsWith('command_argument_name') && value) {
-                    addCommandParamsListItem(value, paramsTranslationsDivDataset.argument, availableArguments, true);
+                    addCommandParamsListItem(value, paramsTranslationsDivDataset.argument, availableArguments, true, true);
                     hasParams = true;
                 }
                 if (key.startsWith('command_argument_description') && value) {
@@ -80,6 +80,7 @@
 
             // Show or hide the available parameters div based on whether params exist
             availableParamsDiv.style.display = hasParams ? 'block' : 'none';
+            attachCommandParamsListeners();
         }
 
         /**
@@ -88,12 +89,18 @@
          * @param text
          * @param elementToAppend
          * @param name
+         * @param argument
          */
-        function addCommandParamsListItem(value, text, elementToAppend, name = false) {
+        function addCommandParamsListItem(value, text, elementToAppend, name = false, argument = false) {
             // Create the li element and add the text with value into it
             const paramElementLi = document.createElement('li');
+            let listText = (name ? `<strong>${value}: </strong>` : `<em>${text}: </em>` + value)
+            if (name) {
+                // Make clickable and focus to the command parameters input
+                listText = '<a class="js-command-add-params" href="#command_params" data-value="' + (!argument ? value : false) + '" style="text-decoration: none; color: black;">' + listText + '</a>';
+            }
             paramElementLi.classList.add('my-1');
-            paramElementLi.innerHTML = (name ? `<strong>${value}: </strong>` : `<em>${text}: </em>` + value);
+            paramElementLi.innerHTML = listText;
             if (!name) {
                 // If name is false we want to create a sub ul element under the argument/option name
                 const paramElementUl = document.createElement('ul');
@@ -104,13 +111,27 @@
             }
         }
 
+        function attachCommandParamsListeners() {
+            // Reset the command parameters input
+            document.getElementById('command_params').value = null;
+            // Add command parameters to the input after clicking
+            document.querySelectorAll('.js-command-add-params').forEach(function (button) {
+                button.addEventListener('click', function () {
+                    if (this.dataset.value && this.dataset.value !== 'false') {
+                        const commandParamsInput = document.getElementById('command_params');
+                        commandParamsInput.value += (commandParamsInput.value === '' ? '' : ' ') + '--' + this.dataset.value + '=';
+                    }
+                });
+            });
+        }
     </script>
 {% endblock %}
 
 {% block body %}
     <div class="row align-items-center">
         <div class="mt-3">
-            <form method="post" action="{{ path('command_schedule_run', {'listId': listId, 'listName': listName}) }}" name="command-schedule">
+            <form method="post" action="{{ path('command_schedule_run', {'listId': listId, 'listName': listName}) }}"
+                  name="command-schedule">
                 <label for="command_select">{{ 'command.select.label'|trans }}:</label>
                 <select id="command_select" class="form-select" name="command-schedule[command]" required="required">
                     <option value="">{{ 'command.select'|trans }}</option>

@@ -44,7 +44,7 @@ command:
   schedule.job: "Naplánovat příkazovou úlohu"
   schedule.job.error.name: "Název příkazu je povinný"
   params.label: "Napište parametry příkazu, jak byste je normálně zadali v konzoli"
-  available: "Dostupný příkaz"
+  available: "Dostupné "
   argument: "Argument"
   arguments: "argumenty"
   option: "Možnost"
