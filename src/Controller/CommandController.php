@@ -63,7 +63,7 @@ class CommandController extends AbstractController
 
         // Try to create the command job
         try {
-            $job = $commandJobFactory->createCommandJob($commandName, $params);
+            $job = $commandJobFactory->createCommandJob($commandName, $params, $listId, $listName);
         } catch (OptimisticLockException|ORMException|CommandJobException $e) {
             // Redirect back to the command schedule
             $this->addFlash('danger', $translator->trans('job.creation.error') . ' - ' . $e->getMessage() . '.');

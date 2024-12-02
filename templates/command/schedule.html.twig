@@ -110,7 +110,7 @@
 {% block body %}
     <div class="row align-items-center">
         <div class="mt-3">
-            <form method="post" action="{{ path('command_schedule_run', {'id': listId, 'name': listName}) }}" name="command-schedule">
+            <form method="post" action="{{ path('command_schedule_run', {'listId': listId, 'listName': listName}) }}" name="command-schedule">
                 <label for="command_select">{{ 'command.select.label'|trans }}:</label>
                 <select id="command_select" class="form-select" name="command-schedule[command]" required="required">
                     <option value="">{{ 'command.select'|trans }}</option>
