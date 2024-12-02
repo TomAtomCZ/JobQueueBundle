@@ -4,7 +4,6 @@ namespace TomAtom\JobQueueBundle\Controller;
 
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\Exception\ORMException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,29 +27,31 @@ class JobController extends AbstractController
     }
 
     /**
-     * @param int $id
+     * @param Job|null $job
+     * @param Request $request
      * @return Response
-     * @throws EntityNotFoundException
      */
     #[IsGranted(JobQueuePermissions::ROLE_JOB_READ)]
     #[Route(path: '/{id<\d+>}', name: 'job_queue_detail')]
-    public function detail(int $id): Response
+    public function detail(?Job $job, Request $request): Response
     {
-        /** @var Job $job */
-        $job = $this->entityManager->getRepository(Job::class)->findOneBy(['id' => $id]);
-
         if (empty($job)) {
-            throw new EntityNotFoundException();
+            // Redirect to list if job doesn't exist
+            $this->addFlash('warning', $this->translator->trans('job.detail.error.not_found'));
+            return $this->redirectToRoute('job_queue_list', [
+                'id' => $request->query->get('listId'),
+                'name' => $request->query->get('listName')
+            ]);
         }
 
-        $entity = null;
         if (!empty($job->getRelatedEntityClassName()) && !empty($job->getRelatedEntityId())) {
+            // Get related entity if job has one
             $entity = $this->entityManager->getRepository($job->getRelatedEntityClassName())->find($job->getRelatedEntityId());
         }
 
         return $this->render('@JobQueue/job/detail.html.twig', [
             'job' => $job,
-            'relatedEntity' => $entity
+            'relatedEntity' => $entity ?? null
         ]);
     }
 
@@ -63,7 +64,6 @@ class JobController extends AbstractController
     #[Route(path: '/list/{id?}/{name?}', name: 'job_queue_list')]
     public function list(?int $id = null, string $name = null): Response
     {
-        $entity = null;
         if (!empty($name) && !empty($id)) {
             $entity = $this->entityManager->getRepository($name)->find($id);
         }
@@ -85,7 +85,7 @@ class JobController extends AbstractController
         return $this->render('@JobQueue/job/list.html.twig', [
             'jobs' => $jobs,
             'relatedEntityId' => $id,
-            'relatedEntity' => $entity,
+            'relatedEntity' => $entity ?? null
         ]);
     }
 
