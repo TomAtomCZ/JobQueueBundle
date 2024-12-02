@@ -2,7 +2,8 @@
 <doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                   xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
-    <entity name="TomAtom\JobQueueBundle\Entity\Job" table="job_queue">
+    <entity name="TomAtom\JobQueueBundle\Entity\Job" table="job_queue"
+            repository-class="TomAtom\JobQueueBundle\Repository\JobRepository">
         <indexes>
             <index name="IDX_7EA1C213DABB966B" columns="related_parent_id"/>
         </indexes>

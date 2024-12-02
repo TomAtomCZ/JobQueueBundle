@@ -27,10 +27,10 @@ class Job
     private ?int $id;
 
     #[ORM\Column(length: 255)]
-    private ?string $status;
+    private ?string $status = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $command;
+    private ?string $command = null;
 
     #[ORM\Column(type: Types::SIMPLE_ARRAY, nullable: true)]
     private string|array|null $commandParams = null;
@@ -52,7 +52,7 @@ class Job
     private ?Job $relatedParent = null;
 
     #[ORM\OneToMany(targetEntity: Job::class, mappedBy: 'relatedParent')]
-    private Collection|array $relatedChildren;
+    private Collection|array|null $relatedChildren = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private ?DateTimeImmutable $createdAt;
@@ -68,8 +68,8 @@ class Job
 
     public function __construct()
     {
-        $this->createdAt = new DateTimeImmutable();
         $this->relatedChildren = new ArrayCollection();
+        $this->createdAt = new DateTimeImmutable();
     }
 
     /**
@@ -289,9 +289,9 @@ class Job
     }
 
     /**
-     * @return Collection|array
+     * @return Collection|array|null
      */
-    public function getRelatedChildren(): Collection|array
+    public function getRelatedChildren(): Collection|array|null
     {
         return $this->relatedChildren;
     }
