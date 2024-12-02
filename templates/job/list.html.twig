@@ -2,7 +2,7 @@
 
 {% block title %}{{ 'job.job_list'|trans }}{% endblock %}
 
-{% set relatedEntityName = constant('class', relatedEntity)|default(null) %}
+{% set relatedEntityName = relatedEntity is not empty ? constant('class', relatedEntity) : null %}
 
 {% block header %}
     <div class="row align-items-center mt-4">
