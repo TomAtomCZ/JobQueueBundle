@@ -10,6 +10,8 @@ job:
     runtime: "Čas běhu"
     closed: "Ukončeno"
     output: "Výstup"
+    error:
+      not_found: "Úloha nenalezena"
   list:
     title: "Plánované úlohy"
     related_entity: "ID entity"
@@ -29,6 +31,11 @@ job:
     error: "Došlo k chybě při plánování úlohy"
     error_security: "Nemáte práva pro vytváření úloh"
     error_already_exists: "Stejná úloha je již naplánovaná"
+  deletion:
+    action: "Odstranit"
+    success: "Úloha odstraněna"
+    error: "Úloha nemohla být odstraněna: "
+    not_deletable: "Úlohu nelze odstanit"
 
 command:
   title: "Plánování příkazu"

@@ -10,6 +10,8 @@ job:
     runtime: "Runtime"
     closed: "Closed"
     output: "Output"
+    error:
+      not_found: "Job not found"
   list:
     title: "Planned jobs"
     related_entity: "Entity ID"
@@ -29,6 +31,11 @@ job:
     error: "An error occurred while planning the job"
     error_security: "You do not have permission for creating jobs"
     error_already_exists: "The same job is already planned"
+  deletion:
+    action: "Delete"
+    success: "Job deleted"
+    error: "Job could not be deleted: "
+    not_deletable: "Job is not deletable"
 
 command:
   title: "Command schedule"

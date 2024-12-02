@@ -48,7 +48,8 @@
                 <td>{{ job.status }}</td>
                 <td class="text-right">
                     {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_JOB_READ')) %}
-                        <a href="{{ path('job_queue_detail', {id: job.id}) }}" class="btn btn-sm btn-secondary"
+                        <a href="{{ path('job_queue_detail') }}"
+                           class="btn btn-sm btn-secondary"
                            role="button">{{ 'job.detail.self'|trans }}
                         </a>
                         {% if job.relatedParent is not empty %}
@@ -57,6 +58,12 @@
                                role="button">{{ 'job.detail.parent'|trans }} ({{ job.relatedParent.id }})
                             </a>
                         {% endif %}
+                    {% endif %}
+                    {% if is_granted('ROLE_JQB_JOB_DELETE') and job.deletable %}
+                        <a href="{{ path('job_queue_delete') }}"
+                           class="btn btn-sm btn-danger"
+                           role="button">{{ 'job.deletion.action'|trans }}
+                        </a>
                     {% endif %}
                 </td>
             </tr>

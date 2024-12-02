@@ -323,4 +323,9 @@ class Job
         $this->runtime = $runtime;
         return $this;
     }
+
+    public function isDeletable(): bool
+    {
+        return $this->getStatus() !== self::STATUS_RUNNING;
+    }
 }
