@@ -61,7 +61,7 @@
                             {{ 'job.cancellation.action'|trans }}
                         </a>
                     {% endif %}
-                {% elseif is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_JOB_CREATE')) %}
+                {% elseif is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_JOB_CREATE')) and job.recreatable %}
                     <a href="{{ path('job_queue_create_from_parent', {'id': job.id, 'listId': relatedEntityId, 'listName': relatedEntityName}) }}"
                        class="btn btn-sm btn-success ms-2" role="button">
                         {{ 'job.recreate_job'|trans }}

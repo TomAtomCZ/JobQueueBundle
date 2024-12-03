@@ -352,14 +352,9 @@ class Job
         return $this->getStatus() === self::STATUS_RUNNING;
     }
 
-    public function isDeletable(): bool
+    public function isPlanned(): bool
     {
-        return !$this->isRunning();
-    }
-
-    public function isRecreatable(): bool
-    {
-        return !$this->isRunning();
+        return $this->getStatus() === self::STATUS_PLANNED;
     }
 
     public function isCancelled(): bool
@@ -367,8 +362,18 @@ class Job
         return $this->getCancelledAt() !== null && $this->getStatus() === self::STATUS_CANCELLED;
     }
 
+    public function isDeletable(): bool
+    {
+        return !$this->isRunning();
+    }
+
     public function isCancellable(): bool
     {
         return $this->isRunning() && !$this->isCancelled();
+    }
+
+    public function isRecreatable(): bool
+    {
+        return !$this->isRunning() && !$this->isPlanned();
     }
 }
