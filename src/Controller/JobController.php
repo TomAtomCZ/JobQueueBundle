@@ -136,7 +136,7 @@ class JobController extends AbstractController
             ]);
         }
 
-        if ($job->isRunning() && !$job->isCancelled()) {
+        if ($job->isCancellable()) {
             // Try to cancel job if job is running
             try {
                 $job->setCancelledAt(new DateTimeImmutable());

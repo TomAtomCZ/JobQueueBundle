@@ -357,8 +357,18 @@ class Job
         return !$this->isRunning();
     }
 
+    public function isRecreatable(): bool
+    {
+        return !$this->isRunning();
+    }
+
     public function isCancelled(): bool
     {
         return $this->getCancelledAt() !== null && $this->getStatus() === self::STATUS_CANCELLED;
+    }
+
+    public function isCancellable(): bool
+    {
+        return $this->isRunning() && !$this->isCancelled();
     }
 }
