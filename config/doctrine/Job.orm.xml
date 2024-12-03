@@ -52,8 +52,13 @@
         <field name="runtime" type="dateinterval" column="runtime" nullable="true"/>
         <many-to-one field="relatedParent" target-entity="Job">
             <join-columns>
-                <join-column name="related_parent_id"/>
+                <join-column name="related_parent_id" on-delete="SET NULL"/>
             </join-columns>
         </many-to-one>
+        <one-to-many field="relatedChildren" target-entity="Job" mapped-by="relatedParent">
+            <cascade>
+                <cascade-all/>
+            </cascade>
+        </one-to-many>
     </entity>
 </doctrine-mapping>
