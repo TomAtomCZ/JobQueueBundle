@@ -36,6 +36,7 @@ job:
     success: "Job deleted"
     error: "Job could not be deleted: "
     not_deletable: "Job is not deletable"
+    confirm: "Really delete?"
 
 command:
   title: "Command schedule"

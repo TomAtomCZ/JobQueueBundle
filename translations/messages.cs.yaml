@@ -36,6 +36,7 @@ job:
     success: "Úloha odstraněna"
     error: "Úloha nemohla být odstraněna: "
     not_deletable: "Úlohu nelze odstanit"
+    confirm: "Opravdu odstranit?"
 
 command:
   title: "Plánování příkazu"

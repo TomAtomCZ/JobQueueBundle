@@ -64,9 +64,9 @@
                     {% endif %}
                     {% if is_granted('ROLE_JQB_JOB_DELETE') and job.deletable %}
                         <a href="{{ path('job_queue_delete', {'id': job.id, 'listId': relatedEntityId, 'listName': relatedEntityName}) }}"
-                           class="btn btn-sm btn-danger"
-                           role="button">{{ 'job.deletion.action'|trans }}
-                        </a>
+                           class="btn btn-sm btn-danger" role="button"
+                           onclick="return confirm('{{ 'job.deletion.confirm'|trans }}')"
+                        >{{ 'job.deletion.action'|trans }}</a>
                     {% endif %}
                 </td>
             </tr>
