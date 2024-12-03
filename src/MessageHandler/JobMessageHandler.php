@@ -51,17 +51,17 @@ class JobMessageHandler
         // Wait for the process to finish and save the command buffer to the output
         while ($process->isRunning()) {
             try {
-                // Refresh the job entity to check if it was cancelled
+                // Refresh the job entity to check if it was cancelled and to update its output
                 $this->entityManager->refresh($job);
-                $buffer = $process->getOutput() . $process->getErrorOutput();
+                $buffer = $process->getIncrementalErrorOutput() . $process->getIncrementalOutput();
+                // Process output
+                $this->processBuffer($job, $buffer);
                 if ($job->isCancelled()) {
                     // If job was cancelled stop the process immediately and break the loop
-                    $job->setOutput($buffer . "\n\n JOB CANCELLED");
+                    $job->setOutput($job->getOutput() . "\n\n JOB CANCELLED");
                     $process->stop(0);
                     break;
                 }
-                // Process output
-                $this->processBuffer($job, $buffer);
             } catch (Throwable $e) {
                 // If exception was thrown stop the process immediately and break the loop
                 $job->setOutput($job->getOutput() . "\n\n" . $e->getMessage());
@@ -88,7 +88,7 @@ class JobMessageHandler
     private function processBuffer(Job $job, string $buffer): void
     {
         // Update the output
-        $job->setOutput($buffer);
+        $job->setOutput($job->getOutput() . $buffer);
         $outputParamsList = [];
         // Split the buffer into lines - try to find parameters outputted from the buffer to be saved
         $lines = explode(PHP_EOL, $buffer);
@@ -104,7 +104,6 @@ class JobMessageHandler
         if (!empty($outputParamsList)) {
             $job->setOutputParams(implode(', ', $outputParamsList));
         }
-
         $this->entityManager->flush();
     }
 }
