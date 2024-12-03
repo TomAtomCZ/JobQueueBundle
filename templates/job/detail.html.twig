@@ -49,7 +49,12 @@
             <th>{{ 'job.state'|trans }}</th>
             <td>
                 {{ job.status }}
-                {% if job.running %}
+                {% if job.planned %}
+                    <a href="{{ path('job_queue_detail', {'id': job.id, 'listId': relatedEntityId, 'listName': relatedEntityName}) }}"
+                       class="btn btn-sm btn-success mx-2" role="button">
+                        {{ 'job.detail.refresh'|trans }}
+                    </a>
+                {% elseif job.running %}
                     <a href="{{ path('job_queue_detail', {'id': job.id, 'listId': relatedEntityId, 'listName': relatedEntityName}) }}"
                        class="btn btn-sm btn-success mx-2" role="button">
                         {{ 'job.detail.refresh'|trans }}
