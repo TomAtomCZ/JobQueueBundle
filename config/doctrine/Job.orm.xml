@@ -49,8 +49,9 @@
         <field name="createdAt" type="datetime_immutable" column="created_at"/>
         <field name="startedAt" type="datetime_immutable" column="started_at" nullable="true"/>
         <field name="closedAt" type="datetime_immutable" column="closed_at" nullable="true"/>
+        <field name="cancelledAt" type="datetime_immutable" column="cancelled_at" nullable="true"/>
         <field name="runtime" type="dateinterval" column="runtime" nullable="true"/>
-        <many-to-one field="relatedParent" target-entity="Job">
+        <many-to-one field="relatedParent" target-entity="Job" inversed-by="relatedChildren">
             <join-columns>
                 <join-column name="related_parent_id" on-delete="SET NULL"/>
             </join-columns>

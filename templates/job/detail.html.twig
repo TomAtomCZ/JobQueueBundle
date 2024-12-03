@@ -49,11 +49,24 @@
             <th>{{ 'job.state'|trans }}</th>
             <td>
                 {{ job.status }}
-                <a href="{{ path('job_queue_detail', {'id': job.id, 'listId': relatedEntityId, 'listName': relatedEntityName}) }}"
-                   class="btn btn-sm btn-danger ms-2"
-                   role="button">
-                    {{ 'job.detail.refresh'|trans }}
-                </a>
+                {% if job.running %}
+                    <a href="{{ path('job_queue_detail', {'id': job.id, 'listId': relatedEntityId, 'listName': relatedEntityName}) }}"
+                       class="btn btn-sm btn-success mx-2" role="button">
+                        {{ 'job.detail.refresh'|trans }}
+                    </a>
+                    {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_JOB_CANCEL')) %}
+                        <a href="{{ path('job_queue_cancel', {'id': job.id, 'listId': relatedEntityId, 'listName': relatedEntityName}) }}"
+                           class="btn btn-sm btn-danger" role="button"
+                           onclick="return confirm('{{ 'job.cancellation.confirm'|trans }}')">
+                            {{ 'job.cancellation.action'|trans }}
+                        </a>
+                    {% endif %}
+                {% elseif job.cancelled and is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_JOB_CREATE')) %}
+                    <a href="{{ path('job_queue_create_from_parent', {'id': job.id, 'listId': relatedEntityId, 'listName': relatedEntityName}) }}"
+                       class="btn btn-sm btn-success ms-2" role="button">
+                        {{ 'job.recreate_job'|trans }}
+                    </a>
+                {% endif %}
             </td>
         </tr>
         <tr>
@@ -76,7 +89,7 @@
     {% if job.relatedParent is not empty %}
         <a href="{{ path('job_queue_detail', {'id': job.relatedParent.id, 'listId': relatedEntityId, 'listName': relatedEntityName}) }}"
            class="btn btn btn-success"
-           role="button">{{ 'job.detail.parent'|trans }}
+           role="button">{{ 'job.detail.parent'|trans }} ({{ job.relatedParent.id }})
         </a>
     {% elseif job.relatedChildren is not empty %}
         {% for childJob in job.relatedChildren %}

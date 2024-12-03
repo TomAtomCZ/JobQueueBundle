@@ -1,6 +1,7 @@
 job:
   job_list: "Job list"
   create_job: "Create job"
+  recreate_job: "Run again"
   detail:
     self: "Detail"
     parent: "Parent job"
@@ -37,6 +38,12 @@ job:
     error: "Job could not be deleted: "
     not_deletable: "Job is not deletable"
     confirm: "Really delete?"
+  cancellation:
+    action: "Cancel"
+    success: "Job cancelled"
+    error: "The job could not be cancelled: "
+    not_cancellable: "The job is not cancellable"
+    confirm: "Really cancel?"
 
 command:
   title: "Command schedule"

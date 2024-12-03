@@ -30,7 +30,8 @@ class JobQueueBundle extends AbstractBundle
             JobQueuePermissions::ROLE_JOB_LIST,
             JobQueuePermissions::ROLE_JOB_READ,
             JobQueuePermissions::ROLE_JOB_CREATE,
-            JobQueuePermissions::ROLE_JOB_DELETE
+            JobQueuePermissions::ROLE_JOB_DELETE,
+            JobQueuePermissions::ROLE_JOB_CANCEL
         ];
         // Commands
         $roleHierarchy[JobQueuePermissions::ROLE_COMMANDS] = [

@@ -6,6 +6,7 @@ use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Process\Process;
+use Throwable;
 use TomAtom\JobQueueBundle\Entity\Job;
 use TomAtom\JobQueueBundle\Message\JobMessage;
 
@@ -45,15 +46,33 @@ class JobMessageHandler
         // Update the job
         $job->setStatus(Job::STATUS_RUNNING);
         $job->setStartedAt(new DateTimeImmutable());
-        $this->entityManager->persist($job);
         $this->entityManager->flush();
 
         // Wait for the process to finish and save the command buffer to the output
-        $process->wait(function ($type, $buffer) use ($job): void {
-            $this->processBuffer($job, $buffer);
-        });
+        while ($process->isRunning()) {
+            try {
+                // Refresh the job entity to check if it was cancelled
+                $this->entityManager->refresh($job);
+                $buffer = $process->getOutput() . $process->getErrorOutput();
+                if ($job->isCancelled()) {
+                    // If job was cancelled stop the process immediately and break the loop
+                    $job->setOutput($buffer . "\n\n JOB CANCELLED");
+                    $process->stop(0);
+                    break;
+                }
+                // Process output
+                $this->processBuffer($job, $buffer);
+            } catch (Throwable $e) {
+                // If exception was thrown stop the process immediately and break the loop
+                $job->setOutput($job->getOutput() . "\n\n" . $e->getMessage());
+                $process->stop(0);
+                break;
+            }
+        }
 
-        $job->setStatus($process->isSuccessful() ? Job::STATUS_COMPLETED : Job::STATUS_FAILED);
+        if ($job->getStatus() !== Job::STATUS_CANCELLED) {
+            $job->setStatus($process->isSuccessful() ? Job::STATUS_COMPLETED : Job::STATUS_FAILED);
+        }
         $job->setClosedAt(new DateTimeImmutable());
         $job->setRuntime($job->getStartedAt()->diff($job->getClosedAt()));
 
@@ -69,7 +88,7 @@ class JobMessageHandler
     private function processBuffer(Job $job, string $buffer): void
     {
         // Update the output
-        $job->setOutput($job->getOutput() . $buffer);
+        $job->setOutput($buffer);
         $outputParamsList = [];
         // Split the buffer into lines - try to find parameters outputted from the buffer to be saved
         $lines = explode(PHP_EOL, $buffer);
@@ -85,7 +104,7 @@ class JobMessageHandler
         if (!empty($outputParamsList)) {
             $job->setOutputParams(implode(', ', $outputParamsList));
         }
-        $this->entityManager->persist($job);
+
         $this->entityManager->flush();
     }
 }

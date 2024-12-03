@@ -1,6 +1,7 @@
 job:
   job_list: "Seznam úloh"
   create_job: "Vytvořit úlohu"
+  recreate_job: "Spustit znovu"
   detail:
     self: "Detail"
     parent: "Nadřazená úloha"
@@ -37,6 +38,12 @@ job:
     error: "Úloha nemohla být odstraněna: "
     not_deletable: "Úlohu nelze odstanit"
     confirm: "Opravdu odstranit?"
+  cancellation:
+    action: "Zastavit"
+    success: "Úloha zastavena"
+    error: "Úloha nemohla být zastavena: "
+    not_cancellable: "Úlohu nelze zastavit"
+    confirm: "Opravdu zastavit?"
 
 command:
   title: "Plánování příkazu"

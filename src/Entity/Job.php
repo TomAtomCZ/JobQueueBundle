@@ -19,6 +19,7 @@ class Job
     const STATUS_RUNNING = 'running';
     const STATUS_COMPLETED = 'completed';
     const STATUS_FAILED = 'failed';
+    const STATUS_CANCELLED = 'cancelled';
     const COMMAND_OUTPUT_PARAMS = 'OUTPUT PARAMS: ';
 
     #[ORM\Id]
@@ -52,7 +53,7 @@ class Job
     private ?Job $relatedParent = null;
 
     #[ORM\OneToMany(targetEntity: Job::class, mappedBy: 'relatedParent')]
-    private Collection|array|null $relatedChildren = null;
+    private Collection|array $relatedChildren;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private ?DateTimeImmutable $createdAt;
@@ -62,6 +63,9 @@ class Job
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?DateTimeImmutable $closedAt = null;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?DateTimeImmutable $cancelledAt = null;
 
     #[ORM\Column(type: Types::DATEINTERVAL, nullable: true)]
     private ?DateInterval $runtime = null;
@@ -235,6 +239,25 @@ class Job
     }
 
     /**
+     * @return DateTimeImmutable|null
+     */
+    public function getCancelledAt(): ?DateTimeImmutable
+    {
+        return $this->cancelledAt;
+    }
+
+    /**
+     * @param DateTimeImmutable|null $cancelledAt
+     * @return $this
+     */
+    public function setCancelledAt(?DateTimeImmutable $cancelledAt): Job
+    {
+        $this->cancelledAt = $cancelledAt;
+        $this->setStatus(self::STATUS_CANCELLED);
+        return $this;
+    }
+
+    /**
      * @return array|string|null
      */
     public function getOutput(): array|string|null
@@ -324,8 +347,18 @@ class Job
         return $this;
     }
 
+    public function isRunning(): bool
+    {
+        return $this->getStatus() === self::STATUS_RUNNING;
+    }
+
     public function isDeletable(): bool
     {
-        return $this->getStatus() !== self::STATUS_RUNNING;
+        return !$this->isRunning();
+    }
+
+    public function isCancelled(): bool
+    {
+        return $this->getCancelledAt() !== null && $this->getStatus() === self::STATUS_CANCELLED;
     }
 }
