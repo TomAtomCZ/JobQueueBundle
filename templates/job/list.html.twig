@@ -49,7 +49,7 @@
                 {% endif %}
                 <td>{{ job.createdAt|date('d.m.Y H:i:s') }}</td>
                 <td>{{ job.status }}</td>
-                <td class="text-right">
+                <td class="text-end">
                     {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_JOB_READ')) %}
                         <a href="{{ path('job_queue_detail', {'id': job.id, 'listId': relatedEntityId, 'listName': relatedEntityName}) }}"
                            class="btn btn-sm btn-secondary"
