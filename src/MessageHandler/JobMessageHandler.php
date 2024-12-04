@@ -53,9 +53,8 @@ class JobMessageHandler
             try {
                 // Refresh the job entity to check if it was cancelled and to update its output
                 $this->entityManager->refresh($job);
-                $buffer = $process->getIncrementalErrorOutput() . $process->getIncrementalOutput();
-                // Process output
-                $this->processBuffer($job, $buffer);
+                // Process output buffer
+                $this->processBuffer($job, $process->getIncrementalErrorOutput() . $process->getIncrementalOutput());
                 if ($job->isCancelled()) {
                     // If job was cancelled stop the process immediately and break the loop
                     $job->setOutput($job->getOutput() . "\n\n JOB CANCELLED");
@@ -69,6 +68,9 @@ class JobMessageHandler
                 break;
             }
         }
+
+        // Process remaining output buffer after process stops
+        $this->processBuffer($job, $process->getIncrementalErrorOutput() . $process->getIncrementalOutput());
 
         if ($job->getStatus() !== Job::STATUS_CANCELLED) {
             $job->setStatus($process->isSuccessful() ? Job::STATUS_COMPLETED : Job::STATUS_FAILED);
