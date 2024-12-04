@@ -1,6 +1,14 @@
 # JobQueueBundle
 
-### Symfony Bundle which aims to replace JMSJobQueueBundle console commands scheduling, using Symfony messenger.
+### Symfony bundle which aims to replace JMSJobQueueBundle for scheduling console commands, leveraging Symfony Messenger for job handling.
+
+## Features:
+
+- Schedule any command from your app as a server-side job, either programmatically or through a browser interface.
+- Browse jobs and see their details in browser.
+- Cancel and retry jobs.
+- Add related entity and parent job.
+- Capture and store specific output from commands in the job's output parameters.
 
 #### Dependencies:
 
@@ -82,6 +90,8 @@ the bundle.
 
 **ROLE_JQB_JOB_DELETE** - Allows deleting jobs.
 
+**ROLE_JQB_JOB_CANCEL** - Allows canceling jobs.
+
 **ROLE_JQB_COMMAND_SCHEDULE** - Allows scheduling commands.
 
 (Also with constants in [JobQueuePermissions.php](src/Security/JobQueuePermissions.php))
@@ -106,28 +116,42 @@ security:
       - ROLE_JQB_JOB_READ
 ```
 
+#### Note - jobs creation is always possible where security has no loaded user, for example if created in a command.
+
 <hr>
 
 #### Update your database so the __'job_queue'__ table is created
 
 ```shell
-php bin/console d:s:u --complete --force
+php bin/console d:s:u --force
 ```
 
-or via migrations if you are using them.
+or via migrations.
+
+#### Do not forget to run the messenger
+
+This is up to you and where your project runs, but you need to have the messenger consuming the right transport for the
+bundle to work.
+
+```shell
+php bin/console messenger:consume job_message
+```
 
 ## Usage:
 
-#### Manually creating the jobs in your application:
+### Manually creating the jobs in your application:
 
 The function __createCommandJob__ from __CommandJobFactory__ accepts:
 
 * command name,
 * command parameters,
 * ID of related entity (optional)
-* Name of related entity class - self::class (optional)
+* name of related entity class - self::class (optional)
+* job entity for parent job (optional)
 
-and returns ID of the created job, for example:
+and returns the created job.
+
+**Basic example**:
 
 ```php
 $commandName = 'app:your:command';
@@ -139,7 +163,7 @@ $params = [
 
 // Try to create the command job
 try {
-    $job = $this->commandJobFactory->createCommandJob($commandName, $params, $entity->getId(), Entity::class);
+    $job = $this->commandJobFactory->createCommandJob($commandName, $params);
 } catch (OptimisticLockException|ORMException|CommandJobException $e) {
     // Redirect back upon failure
     $this->logger->error('createCommandJob error: ' . $e->getMessage());
@@ -150,7 +174,74 @@ try {
 return $this->redirectToRoute('job_queue_detail', ['id' => $job->getId()]);
 ```
 
-#### Creating jobs via the browser interface:
+**Adding a related entity**:
+
+Purpose of this is to filter jobs seen in the list by the related entity.
+
+For example, if you have a Customer entity:
+
+```php
+$job = $this->commandJobFactory->createCommandJob($commandName, $params, $customer->getId(), Customer::class);
+```
+
+If you then go to the job list with parameters /job/list/**1**/**App\Entity\Customer** (which is being automatically
+added if going from the detail with related entity) or if you add it to the list path yourself like:
+
+```twig
+<a href="{{ path('job_queue_list', {'id': customer.id, 'name': constant('class', customer)}) }}">{{ 'job.job_list'|trans }}</a>
+```
+
+then the job list only contains jobs for that given customer.
+
+You can also only add the entity ID.
+
+**Adding a parent job**:
+
+Jobs can have another one as a parent job. One job can have multiple children jobs.
+
+This can be used if for example you need to create a job that has to run after another job finishes.
+
+(Recreating jobs also creates a new one with the original as a parent.)
+
+```php
+// Retrieve another job entity to add as a parent job
+$parentJob = $this->entityManager->getRepository(Job::class)->findOneBy(['command' => $command, 'status' => Job::STATUS_COMPLETED]);
+$job = $this->commandJobFactory->createCommandJob($commandName, $params, null, null, $parentJob);
+```
+
+If jobs have any children/parent there will be button links to them in the job detail (for parents also in job list).
+
+**Saving values from the command output**:
+
+If you need to retrieve and save any data from the output of a command that is running from a job, you can do that by
+adding anything after
+constant **Job::COMMAND_OUTPUT_PARAMS** in the command output, for example:
+
+```php
+$io->info(Job::COMMAND_OUTPUT_PARAMS . $customerId) // $customerId = 123;
+```
+
+This will output in the console **OUTPUT PARAMS: 123** and the '123' will be saved in the job's **outputParams**, which
+can be then used for example to retrieve the customer entity.
+
+```php
+$customer = $this->entityManager->getRepository(Customer::class)->find($job->getOutputParams());
+```
+
+Output params are saved in the database as a TEXT and you can save multiple values, which are then separated by a comma,
+for example:
+
+```php
+$io->info(Job::COMMAND_OUTPUT_PARAMS . 123);
+$io->info(Job::COMMAND_OUTPUT_PARAMS . 'some text value');
+$io->info(Job::COMMAND_OUTPUT_PARAMS . implode(['a', 'b']));
+```
+
+this will be saved as '123, some text value, ab' and then you need to individually handle getting the values by
+what you've
+saved.
+
+### Creating jobs via the browser interface:
 
 On the url __/command__ you can schedule all commands from your application (Symfony ones included):
 
@@ -180,63 +271,15 @@ Extending the templates can be done like this:
 {% block body %}...{% endblock %}
 ```
 
-To change or add translations for a new locale, use those translation variables in your
+To change or add translations for a new locale, use translation variables from bundle's translations in your
 translations/messages.{locale}.yaml:
 
 (Currently there are only translations for *en* and *cs* locales)
 
-```yaml
-job:
-  job_list: "Job list"
-  create_job: "Create job"
-  detail:
-    self: "Detail"
-    title: "Planned job"
-    refresh: "Refresh"
-    runtime: "Runtime"
-    closed: "Closed"
-    output: "Output"
-  list:
-    title: "Planned jobs"
-    related_entity: "Entity ID"
-    back_to_list: "Back to jobs"
-  header:
-    for_entity_with_id: "for entity with ID"
-    for: "for"
-  command: "Command"
-  state: "State"
-  created: "Created"
-  runtime:
-    hours: "hours"
-    minutes: "minutes"
-    seconds: "seconds"
-  creation:
-    success: "Job successfully planned"
-    error: "An error occurred while planning the job"
-    error_security: "You do not have permission for creating jobs"
-    error_already_exists: "The same job is already planned"
-
-command:
-  title: "Command schedule"
-  select: "Select a command to run"
-  select.label: "Command"
-  schedule.job: "Schedule command job"
-  schedule.job.error.name: "Command name is required"
-  params.label: "Write the command's parameters as you would normally in the console"
-  available: "Available command"
-  argument: "Argument"
-  arguments: "arguments"
-  option: "Option"
-  options: "options"
-  description: "Description"
-  mode: "Mode"
-  shortcut: "Shortcut"
-```
-
 ## TODO:
 
-Add configuration for things such as table name?<br>
-Add logging
+Add tests<br>
+Add configuration for things such as table name
 
 ## Contributing:
 
