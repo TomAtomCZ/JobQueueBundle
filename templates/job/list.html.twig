@@ -15,9 +15,9 @@
                 {% endif %}
             </h1>
         </div>
-        {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_COMMAND_SCHEDULE')) %}
+        {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_COMMAND_RUN')) %}
             <div class="col-4 text-end">
-                <a href="{{ path('command_schedule', {'listId': relatedEntityId, 'listName': relatedEntityName}) }}"
+                <a href="{{ path('command_run', {'listId': relatedEntityId, 'listName': relatedEntityName}) }}"
                    class="btn btn-primary" role="button">
                     {{ 'job.create_job'|trans }}
                 </a>

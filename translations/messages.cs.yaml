@@ -46,11 +46,11 @@ job:
     confirm: "Opravdu zastavit?"
 
 command:
-  title: "Plánování příkazu"
+  title: "Spuštění příkazu"
   select: "Vyberte příkaz k provedení"
   select.label: "Příkaz"
-  schedule.job: "Naplánovat příkazovou úlohu"
-  schedule.job.error.name: "Název příkazu je povinný"
+  run.job: "Spustit příkazovou úlohu"
+  run.job.error.name: "Název příkazu je povinný"
   params.label: "Napište parametry příkazu, jak byste je normálně zadali v konzoli"
   available: "Dostupné "
   argument: "Argument"

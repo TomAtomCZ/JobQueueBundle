@@ -178,7 +178,7 @@ class JobController extends AbstractController
         } catch (OptimisticLockException|ORMException|CommandJobException $e) {
             // Redirect back to the command schedule
             $this->addFlash('danger', $this->translator->trans('job.creation.error') . ' - ' . $e->getMessage() . '.');
-            return $this->redirectToRoute('command_schedule', ['listId' => $listId, 'listName' => $listName]);
+            return $this->redirectToRoute('command_run', ['listId' => $listId, 'listName' => $listName]);
         }
 
         return $this->redirectToRoute('job_queue_detail', [

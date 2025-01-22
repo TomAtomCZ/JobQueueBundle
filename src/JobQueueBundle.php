@@ -35,7 +35,7 @@ class JobQueueBundle extends AbstractBundle
         ];
         // Commands
         $roleHierarchy[JobQueuePermissions::ROLE_COMMANDS] = [
-            JobQueuePermissions::ROLE_COMMAND_SCHEDULE
+            JobQueuePermissions::ROLE_COMMAND_RUN
         ];
         // Main role
         $roleHierarchy[JobQueuePermissions::ROLE_ALL] = [

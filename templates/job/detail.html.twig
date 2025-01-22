@@ -29,8 +29,8 @@
                     {{ 'job.job_list'|trans }}
                 </a>
             {% endif %}
-            {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_COMMAND_SCHEDULE')) %}
-                <a href="{{ path('command_schedule', {'listId': relatedEntityId, 'listName': relatedEntityName}) }}"
+            {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_COMMAND_RUN')) %}
+                <a href="{{ path('command_run', {'listId': relatedEntityId, 'listName': relatedEntityName}) }}"
                    class="btn btn-primary" role="button">
                     {{ 'job.create_job'|trans }}
                 </a>

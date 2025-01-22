@@ -5,7 +5,7 @@
 {% block header %}
     <div class="row align-items-center mt-4">
         <div class="col-8 my-2">
-            <h1>{{ 'command.schedule.job'|trans }}</h1>
+            <h1>{{ 'command.run.job'|trans }}</h1>
         </div>
         {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_JOB_LIST')) %}
             <div class="col-4 text-end">
@@ -130,7 +130,7 @@
 {% block body %}
     <div class="row align-items-center">
         <div class="mt-3">
-            <form method="post" action="{{ path('command_schedule_run', {'listId': listId, 'listName': listName}) }}"
+            <form method="post" action="{{ path('command_run_init', {'listId': listId, 'listName': listName}) }}"
                   name="command-schedule">
                 <label for="command_select">{{ 'command.select.label'|trans }}:</label>
                 <select id="command_select" class="form-select" name="command-schedule[command]" required="required">
@@ -174,7 +174,7 @@
 
                 <div class="my-3">
                     <label for="command_params">{{ 'command.params.label'|trans }}:</label>
-                    <input id="command_params" name="command-schedule[params]" type="text" class="form-control">
+                    <input id="command_params" name="command-run[params]" type="text" class="form-control">
                 </div>
 
                 <div id="command_available_params" style="display: none;">
@@ -186,7 +186,7 @@
                 </div>
 
                 <div class="d-flex justify-content-end">
-                    <button class="btn btn-success">{{ 'command.schedule.job'|trans }}</button>
+                    <button class="btn btn-success">{{ 'command.run.job'|trans }}</button>
                 </div>
             </form>
         </div>

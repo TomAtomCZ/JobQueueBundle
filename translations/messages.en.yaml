@@ -46,11 +46,11 @@ job:
     confirm: "Really cancel?"
 
 command:
-  title: "Command schedule"
+  title: "Command run"
   select: "Select a command to run"
   select.label: "Command"
-  schedule.job: "Schedule command job"
-  schedule.job.error.name: "Command name is required"
+  run.job: "Run command job"
+  run.job.error.name: "Command name is required"
   params.label: "Write the command parameters as you would normally in the console"
   available: "Available command"
   argument: "Argument"
