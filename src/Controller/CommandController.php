@@ -83,7 +83,7 @@ class CommandController extends AbstractController
                 } else {
                     $cronPattern = '/^(\*|[0-5]?\d) (\*|[0-1]?\d|2[0-3]) (\*|0?[1-9]|[12]\d|3[01]) (\*|0?[1-9]|1[0-2]) (\*|[0-6])$/';
                     if (!preg_match($cronPattern, $recurringFrequency)) {
-                        $this->addFlash('danger', 'Invalid recurring frequency. Must be a valid cron expression or a predefined keyword starting with @.');
+                        $this->addFlash('danger', $translator->trans('job.recurring.frequency.error'));
                         return $this->redirectToRoute('command_schedule', ['listId' => $listId, 'listName' => $listName]);
                     }
                 }

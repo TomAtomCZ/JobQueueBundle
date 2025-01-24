@@ -55,6 +55,7 @@ job:
     edit: "Edit"
     list: "Recurring jobs list"
     list.title: "Recurring"
+    frequency.error: "Invalid recurring frequency. Must be a valid cron expression or a predefined scheduler keyword."
 
 command:
   title: "Create command"

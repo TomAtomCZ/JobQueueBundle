@@ -27,10 +27,6 @@ final class JobRecurringSchedule implements ScheduleProviderInterface
 
         $recurringJobs = $this->entityManager->getRepository(JobRecurring::class)->findBy(['active' => true]);
         foreach ($recurringJobs as $recurringJob) {
-            // Skip not active jobs
-            if (!$recurringJob->isActive()) {
-                continue;
-            }
             $schedule->add(
                 RecurringMessage::cron($recurringJob->getFrequency(), new JobRecurringMessage(
                     $recurringJob->getCommand(),

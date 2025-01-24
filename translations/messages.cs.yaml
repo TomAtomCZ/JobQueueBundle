@@ -55,6 +55,7 @@ job:
     edit: "Editovat"
     list: "Seznam opakovaných úloh"
     list.title: "Opakovaná"
+    frequency.error: "Neplatná opakující se frekvence. Musí být platný cron nebo předdefinované slovo scheduleru."
 
 command:
   title: "Vytvoření příkazu"
