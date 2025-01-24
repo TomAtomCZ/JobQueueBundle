@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+    <entity name="TomAtom\JobQueueBundle\Entity\JobRecurring" table="job_recurring_queue"
+            repository-class="TomAtom\JobQueueBundle\Repository\JobRecurringRepository">
+        <id name="id" type="integer" column="id">
+            <generator strategy="IDENTITY"/>
+        </id>
+        <field name="command" column="command" length="255">
+            <options>
+                <option name="fixed"/>
+            </options>
+        </field>
+        <field name="commandParams" type="simple_array" column="command_params" length="0" nullable="true">
+            <options>
+                <option name="fixed"/>
+            </options>
+        </field>
+        <field name="createdAt" type="datetime_immutable" column="created_at"/>
+        <field name="frequency" column="frequency" length="255"/>
+        <field name="active" type="boolean" column="active"/>
+    </entity>
+</doctrine-mapping>

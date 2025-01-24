@@ -70,6 +70,9 @@ class Job
     #[ORM\Column(type: Types::DATEINTERVAL, nullable: true)]
     private ?DateInterval $runtime = null;
 
+    #[ORM\Column(type: Types::BOOLEAN, nullable: false)]
+    private ?bool $recurring = false;
+
     public function __construct()
     {
         $this->relatedChildren = new ArrayCollection();
@@ -344,6 +347,24 @@ class Job
     public function setRuntime(?DateInterval $runtime): Job
     {
         $this->runtime = $runtime;
+        return $this;
+    }
+
+    /**
+     * @return bool|null
+     */
+    public function isRecurring(): ?bool
+    {
+        return $this->recurring;
+    }
+
+    /**
+     * @param bool|null $recurring
+     * @return $this
+     */
+    public function setRecurring(?bool $recurring): Job
+    {
+        $this->recurring = $recurring;
         return $this;
     }
 

@@ -1,3 +1,6 @@
+yes: "Yes"
+no: "No"
+
 job:
   job_list: "Job list"
   create_job: "Create job"
@@ -15,14 +18,18 @@ job:
       not_found: "Job not found"
   list:
     title: "Planned jobs"
-    related_entity: "Entity ID"
+    related_entity_id: "ID"
+    related_entity_name: "Entity"
     back_to_list: "Back to jobs"
   header:
     for_entity_with_id: "for entity with ID"
     for: "for"
   command: "Command"
+  command_params: "Parameters"
   state: "State"
   created: "Created"
+  active: "Active"
+  frequency: "Frequency"
   runtime:
     hours: "hours"
     minutes: "minutes"
@@ -44,13 +51,24 @@ job:
     error: "The job could not be cancelled: "
     not_cancellable: "The job is not cancellable"
     confirm: "Really cancel?"
+  recurring:
+    edit: "Edit"
+    list: "Recurring jobs list"
+    list.title: "Recurring"
 
 command:
-  title: "Command run"
+  title: "Create command"
+  title_edit: "Edit command"
   select: "Select a command to run"
   select.label: "Command"
-  run.job: "Run command job"
-  run.job.error.name: "Command name is required"
+  select.method: "Method"
+  select.method.once: "Once"
+  select.method.recurring: "Recurring"
+  recurring.label: "How ofter to run"
+  recurring.help: "Enter as CRON (0 * * * * *) or text (@hourly)"
+  schedule.job: "Run command job"
+  schedule.job_edit: "Save command job"
+  schedule.job.error.name: "Command name is required"
   params.label: "Write the command parameters as you would normally in the console"
   available: "Available command"
   argument: "Argument"

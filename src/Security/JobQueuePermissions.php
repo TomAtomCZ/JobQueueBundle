@@ -12,6 +12,5 @@ final class JobQueuePermissions
     public const ROLE_JOB_CREATE = 'ROLE_JQB_JOB_CREATE';
     public const ROLE_JOB_DELETE = 'ROLE_JQB_JOB_DELETE';
     public const ROLE_JOB_CANCEL = 'ROLE_JQB_JOB_CANCEL';
-    public const ROLE_COMMAND_RUN = 'ROLE_JQB_COMMAND_RUN';
     public const ROLE_COMMAND_SCHEDULE = 'ROLE_JQB_COMMAND_SCHEDULE';
 }

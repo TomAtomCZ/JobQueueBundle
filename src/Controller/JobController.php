@@ -14,6 +14,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use TomAtom\JobQueueBundle\Entity\Job;
+use TomAtom\JobQueueBundle\Entity\JobRecurring;
 use TomAtom\JobQueueBundle\Exception\CommandJobException;
 use TomAtom\JobQueueBundle\Security\JobQueuePermissions;
 use TomAtom\JobQueueBundle\Service\CommandJobFactory;
@@ -90,6 +91,16 @@ class JobController extends AbstractController
             'jobs' => $jobs,
             'relatedEntityId' => $id,
             'relatedEntity' => $entity ?? null
+        ]);
+    }
+
+    #[IsGranted(JobQueuePermissions::ROLE_JOB_LIST)]
+    #[Route(path: '/recurring/list', name: 'job_queue_recurring_list')]
+    public function recurringList(): Response
+    {
+        $jobs = $this->entityManager->getRepository(JobRecurring::class)->findBy([], ['createdAt' => 'DESC']);
+        return $this->render('@JobQueue/job/recurring_list.html.twig', [
+            'jobs' => $jobs
         ]);
     }
 
@@ -178,7 +189,7 @@ class JobController extends AbstractController
         } catch (OptimisticLockException|ORMException|CommandJobException $e) {
             // Redirect back to the command schedule
             $this->addFlash('danger', $this->translator->trans('job.creation.error') . ' - ' . $e->getMessage() . '.');
-            return $this->redirectToRoute('command_run', ['listId' => $listId, 'listName' => $listName]);
+            return $this->redirectToRoute('command_schedule', ['listId' => $listId, 'listName' => $listName]);
         }
 
         return $this->redirectToRoute('job_queue_detail', [

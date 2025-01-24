@@ -1,3 +1,6 @@
+yes: "Ano"
+no: "Ne"
+
 job:
   job_list: "Seznam úloh"
   create_job: "Vytvořit úlohu"
@@ -15,14 +18,18 @@ job:
       not_found: "Úloha nenalezena"
   list:
     title: "Plánované úlohy"
-    related_entity: "ID entity"
+    related_entity_id: "ID"
+    related_entity_name: "Entita"
     back_to_list: "Zpět na úlohy"
   header:
     for_entity_with_id: "pro entitu s ID"
     for: "pro"
   command: "Příkaz"
+  command_params: "Parametry"
   state: "Stav"
   created: "Zadáno"
+  active: "Aktivní"
+  frequency: "Frekvence"
   runtime:
     hours: "hodin"
     minutes: "minut"
@@ -44,13 +51,24 @@ job:
     error: "Úloha nemohla být zastavena: "
     not_cancellable: "Úlohu nelze zastavit"
     confirm: "Opravdu zastavit?"
+  recurring:
+    edit: "Editovat"
+    list: "Seznam opakovaných úloh"
+    list.title: "Opakovaná"
 
 command:
-  title: "Spuštění příkazu"
+  title: "Vytvoření příkazu"
+  title_edit: "Editace příkazu"
   select: "Vyberte příkaz k provedení"
   select.label: "Příkaz"
-  run.job: "Spustit příkazovou úlohu"
-  run.job.error.name: "Název příkazu je povinný"
+  select.method: "Metoda spuštění"
+  select.method.once: "Jednou"
+  select.method.recurring: "Opakovaně"
+  recurring.label: "Jak často spouštět"
+  recurring.help: "Zadejte ve tvaru CRONu (0 * * * *) nebo textově (@hourly)"
+  schedule.job: "Spustit příkazovou úlohu"
+  schedule.job_edit: "Uložit příkazovou úlohu"
+  schedule.job.error.name: "Název příkazu je povinný"
   params.label: "Napište parametry příkazu, jak byste je normálně zadali v konzoli"
   available: "Dostupné "
   argument: "Argument"

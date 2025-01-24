@@ -35,12 +35,13 @@ class CommandJobFactory
      * @param int|null $entityId - Entity ID
      * @param string|null $entityClassName - Entity class name (self:class)
      * @param Job|null $parentJob - Parent Job entity
+     * @param bool $recurring
      * @return Job
      * @throws CommandJobException
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function createCommandJob(string $commandName, array $params, int $entityId = null, string $entityClassName = null, Job $parentJob = null): Job
+    public function createCommandJob(string $commandName, array $params, int $entityId = null, string $entityClassName = null, Job $parentJob = null, bool $recurring = false): Job
     {
         if ($this->security->getUser() && !$this->security->isGranted(JobQueuePermissions::ROLE_JOB_CREATE)) {
             throw new CommandJobException($this->translator->trans('job.creation.error_security'));
@@ -53,12 +54,13 @@ class CommandJobFactory
 
         // Save init data of the job to db
         $job = new Job();
-        $job->setCommand($commandName);
-        $job->setCommandParams($params);
-        $job->setStatus(Job::STATUS_PLANNED);
-        $job->setRelatedEntityId($entityId);
-        $job->setRelatedEntityClassName($entityClassName);
-        $job->setRelatedParent($parentJob);
+        $job->setCommand($commandName)
+            ->setCommandParams($params)
+            ->setStatus(Job::STATUS_PLANNED)
+            ->setRelatedEntityId($entityId)
+            ->setRelatedEntityClassName($entityClassName)
+            ->setRelatedParent($parentJob)
+            ->setRecurring($recurring);
 
         $this->entityManager->persist($job);
         $this->entityManager->flush();

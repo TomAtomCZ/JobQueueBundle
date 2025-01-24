@@ -1,0 +1,137 @@
+{% extends '@JobQueue/base.html.twig' %}
+
+{% block title %}{% if recurringJob is empty %}{{ 'command.title'|trans }}{% else %}{{ 'command.title_edit'|trans }}{% endif %}{% endblock %}
+
+{% block header %}
+    <div class="row align-items-center mt-4">
+        <div class="col-8 my-2">
+            <h1>{% if recurringJob is empty %}{{ 'command.title'|trans }}{% else %}{{ 'command.title_edit'|trans }} #{{ recurringJob.id }}{% endif %}</h1>
+        </div>
+        {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_JOB_LIST')) %}
+            <div class="col-4 text-end">
+                <a href="{{ path('job_queue_list', {'id': listId, 'name': listName}) }}"
+                   class="btn btn-secondary" role="button">
+                    {{ 'job.job_list'|trans }}
+                </a>
+                <a href="{{ path('job_queue_recurring_list') }}"
+                   class="btn btn-secondary" role="button">
+                    {{ 'job.recurring.list'|trans }}
+                </a>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('bundles/jobqueue/js/command.js') }}"></script>
+{% endblock %}
+
+{% block body %}
+    <div class="row align-items-center">
+        <div class="mt-3">
+            <form method="post" action="{{ path('command_schedule_init', {'listId': listId, 'listName': listName}) }}"
+                  name="command-schedule">
+                {% if recurringJob is not empty %}
+                    <label for="command_edit"></label>
+                    <input id="command_edit" name="command-schedule[editId]" hidden="hidden"
+                           value="{{ recurringJob.id }}">
+                {% endif %}
+                <label for="command_select">{{ 'command.select.label'|trans }}:</label>
+                <select id="command_select" class="form-select" name="command-schedule[command]" required="required">
+                    <option value="">{{ 'command.select'|trans }}</option>
+                    {% for command in commands %}
+                        <option value="{{ command.name }}"
+                                {% if recurringJob is not empty and command.name == recurringJob.command %}selected="selected"{% endif %}
+                                {% for key, argument in command.definition.arguments %}
+                                    {% if argument.required %}
+                                        {% set argumentMode = 'REQUIRED' %}
+                                    {% elseif argument.array %}
+                                        {% set argumentMode = 'IS_ARRAY' %}
+                                    {% else %}
+                                        {% set argumentMode = 'OPTIONAL' %}
+                                    {% endif %}
+                                    data-command_argument_name_{{ key }}="{{ argument.name }}"
+                                    data-command_argument_description_{{ key }}="{{ argument.description }}"
+                                    data-command_argument_mode_{{ key }}="{{ argumentMode }}"
+                                {% endfor %}
+                                {% for key, option in command.definition.options %}
+                                    {% if option.valueRequired %}
+                                        {% set optionMode = 'VALUE_REQUIRED' %}
+                                    {% elseif option.valueOptional %}
+                                        {% set optionMode = 'VALUE_OPTIONAL' %}
+                                    {% elseif option.array %}
+                                        {% set optionMode = 'VALUE_IS_ARRAY' %}
+                                    {% elseif option.negatable %}
+                                        {% set optionMode = 'VALUE_NEGATABLE' %}
+                                    {% else %}
+                                        {% set optionMode = 'VALUE_NONE' %}
+                                    {% endif %}
+                                    data-command_option_name_{{ key }}="{{ option.name }}"
+                                    data-command_option_description_{{ key }}="{{ option.description }}"
+                                    data-command_option_mode_{{ key }}="{{ optionMode }}"
+                                    data-command_option_shortcut_{{ key }}="{{ option.shortcut }}"
+                                {% endfor %}
+                        >
+                            {{ command.name }} - {{ command.description }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                {# Params select #}
+                <div class="my-3">
+                    <label for="command_params">{{ 'command.params.label'|trans }}:</label>
+                    <input id="command_params" name="command-schedule[params]" type="text" class="form-control"
+                           {% if recurringJob is not empty %}value="{{ recurringJob.commandParams|join(' ') }}"{% endif %}>
+                </div>
+
+                {# Methods select #}
+                <div class="my-3">
+                    <label for="command_method">{{ 'command.select.method'|trans }}:</label>
+                    <select id="command_method" class="form-select" name="command-schedule[method]" required="required">
+                        <option value="once">{{ 'command.select.method.once'|trans }}</option>
+                        <option value="recurring"
+                                {% if recurringJob is not empty %}selected="selected"{% endif %}>
+                            {{ 'command.select.method.recurring'|trans }}</option>
+                    </select>
+                </div>
+
+                {# Recurring cron input #}
+                <div id="command_cron_div" class="my-3" style="display: none;">
+                    <label for="command_cron">{{ 'command.recurring.label'|trans }}:</label>
+                    <input id="command_cron" name="command-schedule[cron]" type="text" class="form-control"
+                           {% if recurringJob is not empty %}value="{{ recurringJob.frequency }}"{% endif %}>
+                    <span><small>{{ 'command.recurring.help'|trans }}
+                        - <a href="https://symfony.com/doc/current/scheduler.html#cron-expression-triggers"
+                             target="_blank">Symfony Scheduler docs</a></small></span>
+                    <div class="mt-2">
+                        <label for="command_active">{{ 'job.active'|trans }}:</label>
+                        <input id="command_active" name="command-schedule[active]" type="checkbox"
+                               {% if recurringJob is empty or (recurringJob is not empty and recurringJob.active) %}checked="checked"{% endif %}>
+                    </div>
+                </div>
+
+                {# Available arguments and params #}
+                <div id="command_available_params" style="display: none;">
+                    {{ 'command.available'|trans }} {{ 'command.arguments'|trans }}:
+                    <ul id="command_available_arguments"></ul>
+                    {{ 'command.available'|trans }} {{ 'command.options'|trans }}:
+                    <br><small>{{ 'command.options.info'|trans }}</small>
+                    <ul id="command_available_options"></ul>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <button class="btn btn-success">{% if recurringJob is empty %}{{ 'command.schedule.job'|trans }}{% else %}{{ 'command.schedule.job_edit'|trans }}{% endif %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="params-translations" style="display: none;"
+         data-argument="{{ 'command.argument'|trans }}"
+         data-option="{{ 'command.option'|trans }}"
+         data-description="{{ 'command.description'|trans }}"
+         data-mode="{{ 'command.mode'|trans }}"
+         data-shortcut="{{ 'command.shortcut'|trans }}"
+    ></div>
+{% endblock %}
