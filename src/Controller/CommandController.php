@@ -92,6 +92,13 @@ class CommandController extends AbstractController
                 $editId = $commandScheduleRequest['editId'] ?? null;
                 $recurringActive = isset($commandScheduleRequest['active']);
 
+                // Check if same recurring job already exists
+                if ($this->entityManager->getRepository(JobRecurring::class)->isAlreadyCreated($commandName, $params, $recurringFrequency, $recurringActive)) {
+                    $this->addFlash('danger', $translator->trans('job.creation.error_already_exists'));
+                    return !empty($editId) ? $this->redirectToRoute('command_schedule_edit', ['id' => $editId])
+                        : $this->redirectToRoute('command_schedule', ['listId' => $listId, 'listName' => $listName]);
+                }
+
                 // Save recurring job to database
                 $recurringJob = !empty($editId) ? $this->entityManager->getRepository(JobRecurring::class)->find($editId) : new JobRecurring();
                 $recurringJob->setCommand($commandName)
@@ -107,10 +114,8 @@ class CommandController extends AbstractController
                 if ($this->isGranted(JobQueuePermissions::ROLE_JOB_LIST)) {
                     return $this->redirectToRoute('job_queue_recurring_list');
                 } else {
-                    if (!empty($editId)) {
-                        return $this->redirectToRoute('command_schedule_edit', ['id' => $editId]);
-                    }
-                    return $this->redirectToRoute('command_schedule', ['listId' => $listId, 'listName' => $listName]);
+                    return !empty($editId) ? $this->redirectToRoute('command_schedule_edit', ['id' => $editId])
+                        : $this->redirectToRoute('command_schedule', ['listId' => $listId, 'listName' => $listName]);
                 }
             }
 

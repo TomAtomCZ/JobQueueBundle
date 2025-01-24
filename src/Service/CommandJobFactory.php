@@ -47,8 +47,8 @@ class CommandJobFactory
             throw new CommandJobException($this->translator->trans('job.creation.error_security'));
         }
 
-        // Check if the same exact job exists, throw exception if it does
-        if ($this->entityManager->getRepository(Job::class)->isAlreadyCreated($commandName, $params)) {
+        // Check if the same exact not recurring job exists, throw exception if it does
+        if (!$recurring && $this->entityManager->getRepository(Job::class)->isAlreadyCreated($commandName, $params)) {
             throw new CommandJobException($this->translator->trans('job.creation.error_already_exists'));
         }
 
