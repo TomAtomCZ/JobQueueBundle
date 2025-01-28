@@ -66,7 +66,7 @@ command:
   select.method.once: "Jednou"
   select.method.recurring: "Opakovaně"
   recurring.label: "Jak často spouštět"
-  recurring.help: "Zadejte ve tvaru CRONu (0 * * * *) nebo textově (@hourly)"
+  recurring.help: "Zadejte ve tvaru CRONu (0 * * * *) nebo textově (@hourly / #hourly)"
   schedule.job: "Spustit příkazovou úlohu"
   schedule.job_edit: "Uložit příkazovou úlohu"
   schedule.job.error.name: "Název příkazu je povinný"

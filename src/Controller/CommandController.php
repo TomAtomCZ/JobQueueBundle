@@ -77,44 +77,24 @@ class CommandController extends AbstractController
                     return $this->redirectToRoute('command_schedule', ['listId' => $listId, 'listName' => $listName]);
                 }
 
-                // Check if cron pattern is valid
-                if (preg_match("/[a-z]/i", $recurringFrequency) && !str_contains($recurringFrequency, '@')) {
-                    $recurringFrequency = '@' . $recurringFrequency;
-                } else {
-                    $cronPattern = '/^(\*|[0-5]?\d) (\*|[0-1]?\d|2[0-3]) (\*|0?[1-9]|[12]\d|3[01]) (\*|0?[1-9]|1[0-2]) (\*|[0-6])$/';
-                    if (!preg_match($cronPattern, $recurringFrequency)) {
-                        $this->addFlash('danger', $translator->trans('job.recurring.frequency.error'));
-                        return $this->redirectToRoute('command_schedule', ['listId' => $listId, 'listName' => $listName]);
-                    }
-                }
-
                 // Get if we were editing existing one and if is active
                 $editId = $commandScheduleRequest['editId'] ?? null;
                 $recurringActive = isset($commandScheduleRequest['active']);
 
-                // Check if same recurring job already exists
-                if ($this->entityManager->getRepository(JobRecurring::class)->isAlreadyCreated($commandName, $params, $recurringFrequency, $recurringActive)) {
-                    $this->addFlash('danger', $translator->trans('job.creation.error_already_exists'));
-                    return !empty($editId) ? $this->redirectToRoute('command_schedule_edit', ['id' => $editId])
-                        : $this->redirectToRoute('command_schedule', ['listId' => $listId, 'listName' => $listName]);
+                if (!empty($editId)) {
+                    $recurringJob = $this->entityManager->getRepository(JobRecurring::class)->find($editId);
+                    $commandJobFactory->updateRecurringCommandJob($recurringJob, $commandName, $params, $recurringFrequency, $recurringActive);
+                } else {
+                    $commandJobFactory->createRecurringCommandJob($commandName, $params, $recurringFrequency, $recurringActive);
                 }
-
-                // Save recurring job to database
-                $recurringJob = !empty($editId) ? $this->entityManager->getRepository(JobRecurring::class)->find($editId) : new JobRecurring();
-                $recurringJob->setCommand($commandName)
-                    ->setCommandParams($params)
-                    ->setFrequency(trim($recurringFrequency))
-                    ->setActive($recurringActive);
-
-                $this->entityManager->persist($recurringJob);
-                $this->entityManager->flush();
 
                 $this->addFlash('success', $translator->trans('job.creation.success'));
 
                 if ($this->isGranted(JobQueuePermissions::ROLE_JOB_LIST)) {
                     return $this->redirectToRoute('job_queue_recurring_list');
                 } else {
-                    return !empty($editId) ? $this->redirectToRoute('command_schedule_edit', ['id' => $editId])
+                    return !empty($editId)
+                        ? $this->redirectToRoute('command_schedule_edit', ['id' => $editId])
                         : $this->redirectToRoute('command_schedule', ['listId' => $listId, 'listName' => $listName]);
                 }
             }
@@ -124,7 +104,9 @@ class CommandController extends AbstractController
         } catch (OptimisticLockException|ORMException|CommandJobException $e) {
             // Redirect back to the command schedule
             $this->addFlash('danger', $translator->trans('job.creation.error') . ' - ' . $e->getMessage() . '.');
-            return $this->redirectToRoute('command_schedule', ['listId' => $listId, 'listName' => $listName]);
+            return !empty($editId)
+                ? $this->redirectToRoute('command_schedule_edit', ['id' => $editId])
+                : $this->redirectToRoute('command_schedule', ['listId' => $listId, 'listName' => $listName]);
         }
 
         $this->addFlash('success', $translator->trans('job.creation.success'));

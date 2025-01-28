@@ -2,7 +2,10 @@
 
 namespace TomAtom\JobQueueBundle\Scheduler;
 
-use Doctrine\ORM\EntityManagerInterface;
+namespace TomAtom\JobQueueBundle\Scheduler;
+
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Scheduler\Attribute\AsSchedule;
 use Symfony\Component\Scheduler\RecurringMessage;
 use Symfony\Component\Scheduler\Schedule;
@@ -11,30 +14,27 @@ use Symfony\Contracts\Cache\CacheInterface;
 use TomAtom\JobQueueBundle\Entity\JobRecurring;
 use TomAtom\JobQueueBundle\Message\JobRecurringMessage;
 
-#[AsSchedule('job_recurring_schedule')]
+#[AsSchedule(JobRecurring::SCHEDULER_NAME)]
 final class JobRecurringSchedule implements ScheduleProviderInterface
 {
     public function __construct(
-        private readonly CacheInterface         $cache,
-        private readonly EntityManagerInterface $entityManager
+        private readonly EventDispatcherInterface $dispatcher,
+        private readonly LockFactory              $lockFactory,
+        private readonly CacheInterface           $cache
     )
     {
     }
 
     public function getSchedule(): Schedule
     {
-        $schedule = new Schedule();
-
-        $recurringJobs = $this->entityManager->getRepository(JobRecurring::class)->findBy(['active' => true]);
-        foreach ($recurringJobs as $recurringJob) {
-            $schedule->add(
-                RecurringMessage::cron($recurringJob->getFrequency(), new JobRecurringMessage(
-                    $recurringJob->getCommand(),
-                    $recurringJob->getCommandParams()
-                ))
-            );
+        $schedule = $this->schedule ??= new Schedule($this->dispatcher);
+        if (count($schedule->getRecurringMessages()) === 0) {
+            // Set heartbeat message to check periodically for recurring jobs to run in the PreRunEvent
+            $schedule->add(RecurringMessage::every(JobRecurring::HEARTBEAT_INTERVAL,
+                new JobRecurringMessage(JobRecurring::HEARTBEAT_MESSAGE, [])
+            ))
+                ->lock($this->lockFactory->createLock(JobRecurring::SCHEDULER_NAME . '_' . JobRecurring::HEARTBEAT_MESSAGE));
         }
-
         return $schedule->stateful($this->cache);
     }
 }

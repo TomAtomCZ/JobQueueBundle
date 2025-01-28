@@ -53,7 +53,7 @@ job:
     confirm: "Really cancel?"
   recurring:
     edit: "Edit"
-    list: "Recurring jobs list"
+    list: "Recurring job list"
     list.title: "Recurring"
     frequency.error: "Invalid recurring frequency. Must be a valid cron expression or a predefined scheduler keyword."
 
@@ -66,7 +66,7 @@ command:
   select.method.once: "Once"
   select.method.recurring: "Recurring"
   recurring.label: "How ofter to run"
-  recurring.help: "Enter as CRON (0 * * * * *) or text (@hourly)"
+  recurring.help: "Enter as CRON (0 * * * *) or text (@hourly / #hourly)"
   schedule.job: "Run command job"
   schedule.job_edit: "Save command job"
   schedule.job.error.name: "Command name is required"

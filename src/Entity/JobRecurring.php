@@ -12,6 +12,10 @@ use TomAtom\JobQueueBundle\Repository\JobRecurringRepository;
 #[ORM\Table(name: "job_recurring_queue")]
 class JobRecurring
 {
+    public const SCHEDULER_NAME = 'job_recurring_schedule';
+    public const HEARTBEAT_MESSAGE = 'heartbeat';
+    public const HEARTBEAT_INTERVAL = '1 minute';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER)]
