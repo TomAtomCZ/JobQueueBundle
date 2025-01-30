@@ -2,6 +2,7 @@
 
 namespace TomAtom\JobQueueBundle\MessageHandler;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -14,7 +15,7 @@ use TomAtom\JobQueueBundle\Service\CommandJobFactory;
 class JobRecurringMessageHandler
 {
     public function __construct(
-        private readonly CommandJobFactory $commandJobFactory,
+        private readonly CommandJobFactory $commandJobFactory, private readonly EntityManagerInterface $entityManager,
     )
     {
     }
@@ -39,7 +40,7 @@ class JobRecurringMessageHandler
             null,
             null,
             null,
-            $message->getJobRecurringId()
+            $this->entityManager->find(JobRecurring::class, $message->getJobRecurringId()) ?? null
         );
     }
 }
