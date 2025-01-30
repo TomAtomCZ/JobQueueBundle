@@ -138,19 +138,34 @@ function attachCommandParamsListeners() {
  */
 function updateSchedulingInputs() {
     const commandMethodSelect = document.getElementById('command_method');
-    const selectedMethod = commandMethodSelect.selectedOptions[0];
-    // Recurring
     const cronInputDiv = document.getElementById('command_cron_div');
-    cronInputDiv.style.display = selectedMethod.value === 'recurring' ? 'block' : 'none';
-    // Postponed
     const postponedInputDiv = document.getElementById('command_postponed_div');
-    postponedInputDiv.style.display = selectedMethod.value === 'postponed' ? 'block' : 'none';
-    // Change shown input on selected type
-    commandMethodSelect.addEventListener('change', function () {
-        const selectedMethod = commandMethodSelect.selectedOptions[0];
-        cronInputDiv.style.display = selectedMethod.value === 'recurring' ? 'block' : 'none';
-        document.getElementById('command_cron').required = selectedMethod.value === 'recurring';
-        postponedInputDiv.style.display = selectedMethod.value === 'postponed' ? 'block' : 'none';
-        document.getElementById('command_postponed_datetime').required = selectedMethod.value === 'postponed';
-    });
+    const cronInput = document.getElementById('command_cron');
+    const postponedInput = document.getElementById('command_postponed_datetime');
+
+    function updateSchedulingFields() {
+        const selectedMethod = commandMethodSelect.selectedOptions[0].value;
+        // Recurring
+        if (selectedMethod === 'recurring') {
+            cronInputDiv.style.display = 'block';
+            cronInput.setAttribute('required', 'required');
+        } else {
+            cronInputDiv.style.display = 'none';
+            cronInput.removeAttribute('required');
+            cronInput.value = '';
+        }
+        // Postponed
+        if (selectedMethod === 'postponed') {
+            postponedInputDiv.style.display = 'block';
+            postponedInput.setAttribute('required', 'required');
+        } else {
+            postponedInputDiv.style.display = 'none';
+            postponedInput.removeAttribute('required');
+            postponedInput.value = '';
+        }
+    }
+
+    // Run on schedule method change and on page load
+    commandMethodSelect.addEventListener('change', updateSchedulingFields);
+    updateSchedulingFields();
 }
