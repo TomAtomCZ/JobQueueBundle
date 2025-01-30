@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const commandParamsInput = document.getElementById('command_params');
         commandParamsInput.value = '';
     });
-    updateSchedulingInput();
+    updateSchedulingInputs();
 });
 
 /**
@@ -134,16 +134,23 @@ function attachCommandParamsListeners() {
 }
 
 /**
- * Shows/hides the input for recurring schedule message
+ * Shows/hides the inputs for schedule message based on selected job type
  */
-function updateSchedulingInput() {
+function updateSchedulingInputs() {
     const commandMethodSelect = document.getElementById('command_method');
     const selectedMethod = commandMethodSelect.selectedOptions[0];
+    // Recurring
     const cronInputDiv = document.getElementById('command_cron_div');
     cronInputDiv.style.display = selectedMethod.value === 'recurring' ? 'block' : 'none';
+    // Postponed
+    const postponedInputDiv = document.getElementById('command_postponed_div');
+    postponedInputDiv.style.display = selectedMethod.value === 'postponed' ? 'block' : 'none';
+    // Change shown input on selected type
     commandMethodSelect.addEventListener('change', function () {
         const selectedMethod = commandMethodSelect.selectedOptions[0];
         cronInputDiv.style.display = selectedMethod.value === 'recurring' ? 'block' : 'none';
         document.getElementById('command_cron').required = selectedMethod.value === 'recurring';
+        postponedInputDiv.style.display = selectedMethod.value === 'postponed' ? 'block' : 'none';
+        document.getElementById('command_postponed_datetime').required = selectedMethod.value === 'postponed';
     });
 }

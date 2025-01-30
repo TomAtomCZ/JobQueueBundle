@@ -75,8 +75,16 @@
             </td>
         </tr>
         <tr>
+            <th>{{ 'job.type'|trans }}</th>
+            <td>{{ job.type }}</td>
+        </tr>
+        <tr>
             <th>{{ 'job.created'|trans }}</th>
             <td>{{ job.createdAt|date }}</td>
+        </tr>
+        <tr>
+            <th>{{ 'job.start_at'|trans }}</th>
+            <td>{{ job.startAt|date }}</td>
         </tr>
 
         {% if job.closedAt %}

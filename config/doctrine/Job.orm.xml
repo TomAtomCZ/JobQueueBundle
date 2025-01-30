@@ -50,8 +50,13 @@
         <field name="startedAt" type="datetime_immutable" column="started_at" nullable="true"/>
         <field name="closedAt" type="datetime_immutable" column="closed_at" nullable="true"/>
         <field name="cancelledAt" type="datetime_immutable" column="cancelled_at" nullable="true"/>
+        <field name="startAt" type="datetime_immutable" column="start_at" nullable="true"/>
         <field name="runtime" type="dateinterval" column="runtime" nullable="true"/>
-        <field name="recurring" type="boolean" column="recurring"/>
+        <field name="type" column="type" length="10">
+            <options>
+                <option name="fixed"/>
+            </options>
+        </field>
         <many-to-one field="relatedParent" target-entity="Job" inversed-by="relatedChildren">
             <join-columns>
                 <join-column name="related_parent_id" on-delete="SET NULL"/>
@@ -62,5 +67,10 @@
                 <cascade-all/>
             </cascade>
         </one-to-many>
+        <many-to-one field="jobRecurringParent" target-entity="JobRecurring" inversed-by="jobs">
+            <join-columns>
+                <join-column name="job_recurring_parent_id" on-delete="SET NULL"/>
+            </join-columns>
+        </many-to-one>
     </entity>
 </doctrine-mapping>

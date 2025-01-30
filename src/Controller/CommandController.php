@@ -2,6 +2,7 @@
 
 namespace TomAtom\JobQueueBundle\Controller;
 
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
@@ -99,8 +100,20 @@ class CommandController extends AbstractController
                 }
             }
 
-            // Create the command job to run if recurring is false
-            $job = $commandJobFactory->createCommandJob($commandName, $params, $listId, $listName);
+            // Postponed jobs
+            $startAt = null;
+            $postponed = $runMethod === 'postponed';
+            if ($postponed) {
+                $postponedDateTime = $commandScheduleRequest['postponed-datetime'] ?? null;
+                if (empty($postponedDateTime)) {
+                    $this->addFlash('danger', $translator->trans('command.postponed.job.error'));
+                    return $this->redirectToRoute('command_schedule', ['listId' => $listId, 'listName' => $listName]);
+                }
+                $startAt = DateTimeImmutable::createFromFormat('Y-m-d\TH:i', $postponedDateTime);
+            }
+
+            // Create the command job to run for not recurring
+            $job = $commandJobFactory->createCommandJob($commandName, $params, $listId, $listName, null, null, $startAt);
         } catch (OptimisticLockException|ORMException|CommandJobException $e) {
             // Redirect back to the command schedule
             $this->addFlash('danger', $translator->trans('job.creation.error') . ' - ' . $e->getMessage() . '.');

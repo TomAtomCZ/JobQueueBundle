@@ -21,6 +21,9 @@ class Job
     const STATUS_FAILED = 'failed';
     const STATUS_CANCELLED = 'cancelled';
     const COMMAND_OUTPUT_PARAMS = 'OUTPUT PARAMS: ';
+    const TYPE_DEFAULT = 'default';
+    const TYPE_POSTPONED = 'postponed';
+    const TYPE_RECURRING = 'recurring';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -55,6 +58,10 @@ class Job
     #[ORM\OneToMany(targetEntity: Job::class, mappedBy: 'relatedParent')]
     private Collection|array $relatedChildren;
 
+    #[ORM\ManyToOne(targetEntity: JobRecurring::class, inversedBy: 'jobs')]
+    #[ORM\JoinColumn(name: 'job_recurring_parent_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    private ?JobRecurring $jobRecurringParent = null;
+
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private ?DateTimeImmutable $createdAt;
 
@@ -67,16 +74,21 @@ class Job
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?DateTimeImmutable $cancelledAt = null;
 
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?DateTimeImmutable $startAt;
+
     #[ORM\Column(type: Types::DATEINTERVAL, nullable: true)]
     private ?DateInterval $runtime = null;
 
-    #[ORM\Column(type: Types::BOOLEAN, nullable: false)]
-    private ?bool $recurring = false;
+    #[ORM\Column(length: 10)]
+    private ?string $type;
 
     public function __construct()
     {
         $this->relatedChildren = new ArrayCollection();
         $this->createdAt = new DateTimeImmutable();
+        $this->startAt = new DateTimeImmutable();
+        $this->type = self::TYPE_DEFAULT;
     }
 
     /**
@@ -333,6 +345,42 @@ class Job
     }
 
     /**
+     * @return JobRecurring|null
+     */
+    public function getJobRecurringParent(): ?JobRecurring
+    {
+        return $this->jobRecurringParent;
+    }
+
+    /**
+     * @param JobRecurring|null $jobRecurringParent
+     * @return Job
+     */
+    public function setJobRecurringParent(?JobRecurring $jobRecurringParent): Job
+    {
+        $this->jobRecurringParent = $jobRecurringParent;
+        return $this;
+    }
+
+    /**
+     * @return DateTimeImmutable|null
+     */
+    public function getStartAt(): ?DateTimeImmutable
+    {
+        return $this->startAt;
+    }
+
+    /**
+     * @param DateTimeImmutable|null $startAt
+     * @return Job
+     */
+    public function setStartAt(?DateTimeImmutable $startAt): Job
+    {
+        $this->startAt = $startAt;
+        return $this;
+    }
+
+    /**
      * @return DateInterval|null
      */
     public function getRuntime(): ?DateInterval
@@ -351,20 +399,20 @@ class Job
     }
 
     /**
-     * @return bool|null
+     * @return string|null
      */
-    public function isRecurring(): ?bool
+    public function getType(): ?string
     {
-        return $this->recurring;
+        return $this->type;
     }
 
     /**
-     * @param bool|null $recurring
+     * @param string|null $type
      * @return $this
      */
-    public function setRecurring(?bool $recurring): Job
+    public function setType(?string $type): Job
     {
-        $this->recurring = $recurring;
+        $this->type = $type;
         return $this;
     }
 

@@ -60,7 +60,7 @@ class JobRecurringScheduleListener implements EventSubscriberInterface
         foreach ($recurringJobs as $recurringJob) {
             $currentSchedule->getSchedule()->add(RecurringMessage::cron(
                 $recurringJob->getFrequency(),
-                new JobRecurringMessage($recurringJob->getCommand(), $recurringJob->getCommandParams())
+                new JobRecurringMessage($recurringJob->getCommand(), $recurringJob->getCommandParams(), $recurringJob->getId())
             ))
                 ->lock($this->lockFactory->createLock(
                     sprintf('%s_%s_%s',

@@ -2,12 +2,16 @@
 
 namespace TomAtom\JobQueueBundle\Service;
 
+use DateTime;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Messenger\Stamp\DelayStamp;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use TomAtom\JobQueueBundle\Entity\Job;
 use TomAtom\JobQueueBundle\Entity\JobRecurring;
@@ -32,40 +36,62 @@ class CommandJobFactory
 
     /**
      * @param string $commandName - Command name
-     * @param array $params - Command params
+     * @param array $commandParams - Command params
      * @param int|null $entityId - Entity ID
      * @param string|null $entityClassName - Entity class name (self:class)
      * @param Job|null $parentJob - Parent Job entity
-     * @param bool $recurring
+     * @param JobRecurring|null $jobRecurring - Recurring job from which was created
+     * @param DateTimeImmutable|null $startAt - Postpone job at time
      * @return Job
-     * @throws CommandJobException|ORMException|OptimisticLockException
+     * @throws CommandJobException
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
-    public function createCommandJob(string $commandName, array $params, int $entityId = null, string $entityClassName = null, Job $parentJob = null, bool $recurring = false): Job
+    public function createCommandJob(string $commandName, array $commandParams, int $entityId = null, string $entityClassName = null, Job $parentJob = null, JobRecurring $jobRecurring = null, ?DateTimeImmutable $startAt = null): Job
     {
+        // Check if user is loaded and is granted job creation
         if ($this->security->getUser() && !$this->security->isGranted(JobQueuePermissions::ROLE_JOB_CREATE)) {
             throw new CommandJobException($this->translator->trans('job.creation.error_security'));
         }
 
         // Check if the same exact job exists, throw exception if it does
-        if ($this->entityManager->getRepository(Job::class)->isAlreadyCreated($commandName, $params)) {
+        if ($this->entityManager->getRepository(Job::class)->isAlreadyCreated($commandName, $commandParams)) {
             throw new CommandJobException($this->translator->trans('job.creation.error_already_exists'));
+        }
+
+        // Job has to be only one of recurring or postponed
+        if ($jobRecurring && $startAt) {
+            throw new CommandJobException($this->translator->trans('job.creation.error_recurring_start_at'));
         }
 
         // Save init data of the job to db
         $job = new Job();
         $job->setCommand($commandName)
-            ->setCommandParams($params)
+            ->setCommandParams($commandParams)
             ->setStatus(Job::STATUS_PLANNED)
             ->setRelatedEntityId($entityId)
             ->setRelatedEntityClassName($entityClassName)
-            ->setRelatedParent($parentJob)
-            ->setRecurring($recurring);
+            ->setRelatedParent($parentJob);
+
+        // If not default set type and startAt date
+        if ($jobRecurring) {
+            $job->setType(Job::TYPE_RECURRING)
+                ->setJobRecurringParent($jobRecurring);
+        } else if ($startAt) {
+            $job->setType(Job::TYPE_POSTPONED)
+                ->setStartAt($startAt);
+        }
 
         $this->entityManager->persist($job);
         $this->entityManager->flush();
 
         // Dispatch the message to the message bus
         $message = new JobMessage($job->getId());
+        if ($startAt) {
+            // Set delay if is postponed
+            $delay = $startAt->getTimestamp() - (new DateTime())->getTimestamp();
+            $message = new Envelope($message, [new DelayStamp($delay * 1000)]);
+        }
         $this->messageBus->dispatch($message);
 
         // Return created job

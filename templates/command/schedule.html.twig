@@ -90,10 +90,18 @@
                     <label for="command_method">{{ 'command.select.method'|trans }}:</label>
                     <select id="command_method" class="form-select" name="command-schedule[method]" required="required">
                         <option value="once">{{ 'command.select.method.once'|trans }}</option>
+                        <option value="postponed">{{ 'command.select.method.postponed'|trans }}</option>
                         <option value="recurring"
                                 {% if recurringJob is not empty %}selected="selected"{% endif %}>
                             {{ 'command.select.method.recurring'|trans }}</option>
                     </select>
+                </div>
+
+                {# Postponed datetime input #}
+                <div id="command_postponed_div" class="my-3" style="display: none;">
+                    <label for="command_postponed_datetime">{{ 'command.postponed.label'|trans }}:</label>
+                    <input id="command_postponed_datetime" name="command-schedule[postponed-datetime]"
+                           type="datetime-local" class="form-control">
                 </div>
 
                 {# Recurring cron input #}

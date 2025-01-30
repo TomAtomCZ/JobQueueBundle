@@ -45,7 +45,7 @@
             {% endif %}
             <th>{{ 'job.created'|trans }}</th>
             <th>{{ 'job.state'|trans }}</th>
-            <th>{{ 'job.recurring.list.title'|trans }}</th>
+            <th>{{ 'job.type'|trans }}</th>
             <th></th>
         </tr>
         </thead>
@@ -62,7 +62,14 @@
                 {% endif %}
                 <td>{{ job.createdAt|date('d.m.Y H:i:s') }}</td>
                 <td>{{ job.status }}</td>
-                <td>{{ job.recurring ? 'yes'|trans : 'no'|trans }}</td>
+                <td>
+                    {{ job.type }}
+                    {% if job.type == constant('TomAtom\\JobQueueBundle\\Entity\\Job::TYPE_POSTPONED') %}
+                        {{ ' (' ~ job.startAt|date('Y-m-d H:i:s') ~ ') ' }}
+                    {% elseif job.type == constant('TomAtom\\JobQueueBundle\\Entity\\Job::TYPE_RECURRING') and job.jobRecurringParent is not empty %}
+                        {{ ' (' ~ job.jobRecurringParent.frequency ~ ') ' }}
+                    {% endif %}
+                </td>
                 <td class="text-end">
                     {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_JOB_READ')) %}
                         <a href="{{ path('job_queue_detail', {'id': job.id, 'listId': relatedEntityId, 'listName': relatedEntityName}) }}"

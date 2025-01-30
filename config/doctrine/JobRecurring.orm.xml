@@ -20,5 +20,10 @@
         <field name="createdAt" type="datetime_immutable" column="created_at"/>
         <field name="frequency" column="frequency" length="255"/>
         <field name="active" type="boolean" column="active"/>
+        <one-to-many field="jobs" target-entity="Job" mapped-by="jobRecurringParent">
+            <cascade>
+                <cascade-all/>
+            </cascade>
+        </one-to-many>
     </entity>
 </doctrine-mapping>

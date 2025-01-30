@@ -6,7 +6,8 @@ class JobRecurringMessage
 {
     public function __construct(
         private readonly string $commandName,
-        private readonly array  $params
+        private readonly array  $params,
+        private readonly ?int   $jobRecurringId = null
     )
     {
     }
@@ -19,5 +20,10 @@ class JobRecurringMessage
     public function getParams(): array
     {
         return $this->params;
+    }
+
+    public function getJobRecurringId(): ?int
+    {
+        return $this->jobRecurringId;
     }
 }

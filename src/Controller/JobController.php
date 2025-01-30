@@ -184,7 +184,7 @@ class JobController extends AbstractController
 
         // Try to create the command job
         try {
-            $job = $commandJobFactory->createCommandJob($parentJob->getCommand(), $parentJob->getCommandParams(), $listId, $listName, $parentJob);
+            $job = $commandJobFactory->createCommandJob($parentJob->getCommand(), $parentJob->getCommandParams(), $listId, $listName, $parentJob, $parentJob->getJobRecurringParent(), $parentJob->getStartAt());
             $this->addFlash('success', $this->translator->trans('job.creation.success'));
         } catch (OptimisticLockException|ORMException|CommandJobException $e) {
             // Redirect back to the command schedule

@@ -39,7 +39,7 @@ class JobRecurringMessageHandler
             null,
             null,
             null,
-            true
+            $message->getJobRecurringId()
         );
     }
 }

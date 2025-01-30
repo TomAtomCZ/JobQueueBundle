@@ -3,6 +3,8 @@
 namespace TomAtom\JobQueueBundle\Entity;
 
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use TomAtom\JobQueueBundle\Repository\JobRecurringRepository;
@@ -33,13 +35,17 @@ class JobRecurring
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private ?DateTimeImmutable $createdAt;
 
-    public function __construct()
-    {
-        $this->createdAt = new DateTimeImmutable();
-    }
+    #[ORM\OneToMany(targetEntity: Job::class, mappedBy: 'jobRecurringParent', cascade: ['persist', 'remove'])]
+    private Collection $jobs;
 
     #[ORM\Column(type: Types::BOOLEAN)]
     private bool $active = true;
+
+    public function __construct()
+    {
+        $this->createdAt = new DateTimeImmutable();
+        $this->jobs = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -99,5 +105,27 @@ class JobRecurring
     {
         $this->active = $active;
         return $this;
+    }
+
+    public function getJobs(): Collection
+    {
+        return $this->jobs;
+    }
+
+    public function addJob(Job $job): void
+    {
+        if (!$this->jobs->contains($job)) {
+            $this->jobs->add($job);
+            $job->setJobRecurringParent($this);
+        }
+    }
+
+    public function removeJob(Job $job): void
+    {
+        if ($this->jobs->removeElement($job)) {
+            if ($job->getJobRecurringParent() === $this) {
+                $job->setJobRecurringParent(null);
+            }
+        }
     }
 }
