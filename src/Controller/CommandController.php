@@ -29,13 +29,13 @@ class CommandController extends AbstractController
 
     #[Route(path: '/schedule', name: 'command_schedule')]
     #[Route(path: '/schedule/{id<\d+>}', name: 'command_schedule_edit')]
-    public function schedule(KernelInterface $kernel, Request $request, ?JobRecurring $recurringJob = null): Response
+    public function schedule(KernelInterface $kernel, Request $request, ?JobRecurring $jobRecurring = null): Response
     {
         return $this->render('@JobQueue/command/schedule.html.twig', [
             'commands' => $this->getApplicationCommands($kernel),
             'listId' => $request->query->get('listId'),
             'listName' => $request->query->get('listName'),
-            'recurringJob' => $recurringJob,
+            'jobRecurring' => $jobRecurring,
         ]);
     }
 
@@ -83,8 +83,8 @@ class CommandController extends AbstractController
                 $recurringActive = isset($commandScheduleRequest['active']);
 
                 if (!empty($editId)) {
-                    $recurringJob = $this->entityManager->getRepository(JobRecurring::class)->find($editId);
-                    $commandJobFactory->updateRecurringCommandJob($recurringJob, $commandName, $params, $recurringFrequency, $recurringActive);
+                    $jobRecurring = $this->entityManager->getRepository(JobRecurring::class)->find($editId);
+                    $commandJobFactory->updateRecurringCommandJob($jobRecurring, $commandName, $params, $recurringFrequency, $recurringActive);
                 } else {
                     $commandJobFactory->createRecurringCommandJob($commandName, $params, $recurringFrequency, $recurringActive);
                 }

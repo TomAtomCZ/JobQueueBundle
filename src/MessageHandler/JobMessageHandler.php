@@ -13,11 +13,8 @@ use TomAtom\JobQueueBundle\Message\JobMessage;
 #[AsMessageHandler]
 class JobMessageHandler
 {
-    private EntityManagerInterface $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(private readonly EntityManagerInterface $entityManager)
     {
-        $this->entityManager = $entityManager;
     }
 
     public function __invoke(JobMessage $message): void
@@ -57,7 +54,7 @@ class JobMessageHandler
                 $this->processBuffer($job, $process->getIncrementalErrorOutput() . $process->getIncrementalOutput());
                 if ($job->isCancelled()) {
                     // If job was cancelled stop the process immediately and break the loop
-                    $job->setOutput($job->getOutput() . "\n\n JOB CANCELLED");
+                    $job->setOutput($job->getOutput() . "\n\n" . Job::JOB_CANCELLED_MESSAGE);
                     $process->stop(0);
                     break;
                 }

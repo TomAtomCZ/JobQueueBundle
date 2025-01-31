@@ -15,7 +15,8 @@ use TomAtom\JobQueueBundle\Service\CommandJobFactory;
 class JobRecurringMessageHandler
 {
     public function __construct(
-        private readonly CommandJobFactory $commandJobFactory, private readonly EntityManagerInterface $entityManager,
+        private readonly CommandJobFactory      $commandJobFactory,
+        private readonly EntityManagerInterface $entityManager,
     )
     {
     }
@@ -34,13 +35,15 @@ class JobRecurringMessageHandler
             return;
         }
 
+        $jobRecurring = $this->entityManager->find(JobRecurring::class, $message->getJobRecurringId()) ?? null;
+
         $this->commandJobFactory->createCommandJob(
             $message->getCommandName(),
             $message->getParams(),
             null,
             null,
             null,
-            $this->entityManager->find(JobRecurring::class, $message->getJobRecurringId()) ?? null
+            $jobRecurring
         );
     }
 }

@@ -20,10 +20,11 @@ class Job
     const STATUS_COMPLETED = 'completed';
     const STATUS_FAILED = 'failed';
     const STATUS_CANCELLED = 'cancelled';
-    const COMMAND_OUTPUT_PARAMS = 'OUTPUT PARAMS: ';
-    const TYPE_DEFAULT = 'default';
+    const TYPE_ONCE = 'once';
     const TYPE_POSTPONED = 'postponed';
     const TYPE_RECURRING = 'recurring';
+    const COMMAND_OUTPUT_PARAMS = 'OUTPUT PARAMS: ';
+    const JOB_CANCELLED_MESSAGE = 'JOB CANCELLED';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -88,7 +89,7 @@ class Job
         $this->relatedChildren = new ArrayCollection();
         $this->createdAt = new DateTimeImmutable();
         $this->startAt = new DateTimeImmutable();
-        $this->type = self::TYPE_DEFAULT;
+        $this->type = self::TYPE_ONCE;
     }
 
     /**
