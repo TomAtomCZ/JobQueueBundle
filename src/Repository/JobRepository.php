@@ -17,12 +17,13 @@ class JobRepository extends ServiceEntityRepository
     }
 
     /**
-     * Checks if job with the same command, parameters and status {@see Job::STATUS_PLANNED} exists
+     * Checks if job with the same command, parameters, type and status {@see Job::STATUS_PLANNED} exists
      * @param string $command
      * @param array $params
+     * @param string $type
      * @return bool
      */
-    public function isAlreadyCreated(string $command, array $params): bool
+    public function isAlreadyCreated(string $command, array $params, string $type): bool
     {
         $result = $this->createQueryBuilder('j')
             ->select('1')
@@ -32,6 +33,8 @@ class JobRepository extends ServiceEntityRepository
             ->setParameter('command', $command)
             ->andWhere('j.commandParams = :commandParams')
             ->setParameter('commandParams', trim(implode(',', $params)))
+            ->andWhere('j.type = :type')
+            ->setParameter('type', $type)
             ->getQuery()
             ->getOneOrNullResult();
 
