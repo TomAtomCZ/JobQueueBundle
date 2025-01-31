@@ -7,7 +7,7 @@
         <div class="col-8 my-2">
             <h1>{{ 'job.recurring.list'|trans }}</h1>
         </div>
-        <div class="col-4 text-end">
+        <div class="col-4 d-none d-lg-block text-end">
             {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_JOB_LIST')) %}
                 <a href="{{ path('job_queue_list') }}"
                    class="btn btn-secondary" role="button">
@@ -21,38 +21,99 @@
                 </a>
             {% endif %}
         </div>
+
+        <div class="col-4 text-end d-lg-none">
+            <div class="dropdown">
+                <button class="btn btn-primary dropdown-toggle" type="button" id="jobActionsDropdown"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                    {{ 'job.actions'|trans }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="jobActionsDropdown">
+                    {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_JOB_LIST')) %}
+                        <li>
+                            <a href="{{ path('job_queue_list') }}"
+                               class="dropdown-item">
+                                {{ 'job.job_list'|trans }}
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_COMMAND_SCHEDULE')) %}
+                        <li>
+                            <a href="{{ path('command_schedule') }}"
+                               class="dropdown-item">
+                                {{ 'job.create_job'|trans }}
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
     </div>
 {% endblock %}
 
 {% block body %}
-    <table class="table table-hover">
-        <thead>
-        <tr>
-            <th>{{ 'job.command'|trans }}</th>
-            <th>{{ 'job.created'|trans }}</th>
-            <th>{{ 'job.frequency'|trans }}</th>
-            <th>{{ 'job.active'|trans }}</th>
-            <th></th>
-        </tr>
-        </thead>
-        <tbody>
-
-        {% for job in jobs %}
+    <div class="table-responsive d-none d-md-block">
+        <table class="table table-striped table-hover">
+            <thead>
             <tr>
-                <td><code>{{ job.command }} {{ job.commandParams|join(' ') }}</code></td>
-                <td>{{ job.createdAt|date('d.m.Y H:i:s') }}</td>
-                <td>{{ job.frequency }}</td>
-                <td>{{ job.active ? 'yes'|trans : 'no'|trans }}</td>
-                <td class="text-end">
-                    {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_COMMAND_SCHEDULE')) %}
-                        <a href="{{ path('command_schedule_edit', {'id': job.id}) }}"
-                           class="btn btn-sm btn-secondary"
-                           role="button">{{ 'job.recurring.edit'|trans }}
-                        </a>
-                    {% endif %}
-                </td>
+                <th>{{ 'job.command'|trans }}</th>
+                <th>{{ 'job.created'|trans }}</th>
+                <th class="d-none d-sm-table-cell">{{ 'job.frequency'|trans }}</th>
+                <th class="d-none d-md-table-cell">{{ 'job.active'|trans }}</th>
+                <th></th>
             </tr>
+            </thead>
+            <tbody>
+            {% for job in jobs %}
+                <tr>
+                    <td><code>{{ job.command }} {{ job.commandParams|join(' ') }}</code></td>
+                    <td>{{ job.createdAt|date('d.m.Y H:i:s') }}</td>
+                    <td class="d-none d-sm-table-cell">{{ job.frequency }}</td>
+                    <td class="d-none d-md-table-cell">{{ job.active ? 'yes'|trans : 'no'|trans }}</td>
+                    <td class="text-end">
+                        {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_COMMAND_SCHEDULE')) %}
+                            <a href="{{ path('command_schedule_edit', {'id': job.id}) }}"
+                               class="btn btn-sm btn-secondary">{{ 'job.recurring.edit'|trans }}
+                            </a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="d-block d-md-none">
+        {% for job in jobs %}
+            <div class="card mb-2" {% if loop.index % 2 %}style="background-color: #f2f2f2;"{% endif %}>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-8">
+                            <h5 class="card-title"><code>{{ job.command }} {{ job.commandParams|join(' ') }}</code></h5>
+                        </div>
+                        <div class="col-4 text-end">
+                            {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_COMMAND_SCHEDULE')) %}
+                                <a href="{{ path('command_schedule_edit', {'id': job.id}) }}"
+                                   class="btn btn-sm btn-secondary">{{ 'job.recurring.edit'|trans }}
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <p class="card-text">
+                        <strong>{{ 'job.created'|trans }}:</strong> {{ job.createdAt|date('d.m.Y H:i:s') }} <br>
+                        <strong>{{ 'job.frequency'|trans }}:</strong> {{ job.frequency }} <br>
+                        <strong>{{ 'job.active'|trans }}:</strong> {{ job.active ? 'yes'|trans : 'no'|trans }}
+                    </p>
+                </div>
+            </div>
         {% endfor %}
-        </tbody>
-    </table>
+    </div>
+
+    <div class="d-flex justify-content-center my-4">
+        <div class="row paginator-wrap">
+            <div class="col-md-12">
+                {{ knp_pagination_render(pagination) }}
+            </div>
+        </div>
+    </div>
 {% endblock %}

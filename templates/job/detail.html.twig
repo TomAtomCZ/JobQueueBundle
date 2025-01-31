@@ -8,7 +8,8 @@
 {% block header %}
     <div class="row align-items-center mt-4">
         <div class="col-8 my-2">
-            <h1>{{ 'job.detail.title'|trans }} {{ job.id }}
+            <h1>
+                {{ 'job.detail.title'|trans }} {{ job.id }}
                 {% if relatedEntity is not empty %}
                     {{ 'job.header.for'|trans }} <strong>{{ relatedEntity }}</strong>
                 {% elseif relatedEntity is empty and relatedEntityId is not empty %}
@@ -16,25 +17,63 @@
                 {% endif %}
             </h1>
         </div>
-        <div class="col-4 text-end">
+        <div class="col-4 text-end d-none d-lg-block">
             {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_JOB_DELETE')) and job.deletable %}
                 <a href="{{ path('job_queue_delete', {'id': job.id, 'listId': relatedEntityId, 'listName': relatedEntityName}) }}"
-                   class="btn btn-danger" role="button"
-                   onclick="return confirm('{{ 'job.deletion.confirm'|trans }}')"
-                >{{ 'job.deletion.action'|trans }}</a>
+                   class="btn btn-danger"
+                   onclick="return confirm('{{ 'job.deletion.confirm'|trans }}')">
+                    {{ 'job.deletion.action'|trans }}
+                </a>
             {% endif %}
             {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_JOB_LIST')) %}
                 <a href="{{ path('job_queue_list', {'id': relatedEntityId, 'name': relatedEntityName}) }}"
-                   class="btn btn-secondary" role="button">
+                   class="btn btn-secondary">
                     {{ 'job.job_list'|trans }}
                 </a>
             {% endif %}
             {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_COMMAND_SCHEDULE')) %}
                 <a href="{{ path('command_schedule', {'listId': relatedEntityId, 'listName': relatedEntityName}) }}"
-                   class="btn btn-primary" role="button">
+                   class="btn btn-primary">
                     {{ 'job.create_job'|trans }}
                 </a>
             {% endif %}
+        </div>
+
+        {# Dropdown actions #}
+        <div class="col-4 text-end d-lg-none">
+            <div class="dropdown">
+                <button class="btn btn-primary dropdown-toggle" type="button" id="jobActionsDropdown"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                    {{ 'job.actions'|trans }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="jobActionsDropdown">
+                    {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_JOB_DELETE')) and job.deletable %}
+                        <li>
+                            <a class="dropdown-item text-danger"
+                               href="{{ path('job_queue_delete', {'id': job.id, 'listId': relatedEntityId, 'listName': relatedEntityName}) }}"
+                               onclick="return confirm('{{ 'job.deletion.confirm'|trans }}')">
+                                {{ 'job.deletion.action'|trans }}
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_JOB_LIST')) %}
+                        <li>
+                            <a class="dropdown-item"
+                               href="{{ path('job_queue_list', {'id': relatedEntityId, 'name': relatedEntityName}) }}">
+                                {{ 'job.job_list'|trans }}
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_COMMAND_SCHEDULE')) %}
+                        <li>
+                            <a class="dropdown-item"
+                               href="{{ path('command_schedule', {'listId': relatedEntityId, 'listName': relatedEntityName}) }}">
+                                {{ 'job.create_job'|trans }}
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
         </div>
     </div>
 {% endblock %}
@@ -101,20 +140,42 @@
 
     {% if job.relatedParent is not empty %}
         <a href="{{ path('job_queue_detail', {'id': job.relatedParent.id, 'listId': relatedEntityId, 'listName': relatedEntityName}) }}"
-           class="btn btn-info"
+           class="btn btn-outline-primary"
            role="button">{{ 'job.detail.parent'|trans }} ({{ job.relatedParent.id }})
         </a>
     {% elseif job.relatedChildren is not empty %}
         {% for childJob in job.relatedChildren %}
             <a href="{{ path('job_queue_detail', {'id': childJob.id, 'listId': relatedEntityId, 'listName': relatedEntityName}) }}"
-               class="btn btn-info"
+               class="btn btn-outline-primary"
                role="button">{{ 'job.detail.child'|trans }} ({{ childJob.id }})
             </a>
         {% endfor %}
     {% endif %}
 
+    {% if job.jobRecurringParent is not empty %}
+        <a href="{{ path('command_schedule_edit', {'id': job.jobRecurringParent.id}) }}"
+           class="btn btn-outline-primary"
+           role="button">{{ 'job.detail.recurring_parent'|trans }} ({{ job.jobRecurringParent.id }})
+        </a>
+    {% endif %}
+
     {% if job.output is not empty %}
         <h3 class="mb-3 mt-2">{{ 'job.detail.output'|trans }}</h3>
-        <pre style="overflow:auto;">{{ job.output }}</pre>
+        <pre id="jobOutput" class="terminal-output">{{ job.output }}</pre>
     {% endif %}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Scroll to the end of the output params
+        function scrollToBottom() {
+            const jobOutput = document.getElementById('jobOutput');
+            if (jobOutput) {
+                jobOutput.scrollTop = jobOutput.scrollHeight;
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", scrollToBottom);
+    </script>
 {% endblock %}

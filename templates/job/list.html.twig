@@ -6,7 +6,7 @@
 
 {% block header %}
     <div class="row align-items-center mt-4">
-        <div class="col-8 my-2">
+        <div class="col-6 my-2">
             <h1>{{ 'job.job_list'|trans }}
                 {% if relatedEntity is not empty %}
                     {{ 'job.header.for'|trans }} <strong>{{ relatedEntity }}</strong>
@@ -15,7 +15,7 @@
                 {% endif %}
             </h1>
         </div>
-        <div class="col-4 text-end">
+        <div class="col-6 text-end d-none d-lg-block">
             {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_JOB_LIST')) %}
                 <a href="{{ path('job_queue_recurring_list') }}"
                    class="btn btn-secondary" role="button">
@@ -29,57 +29,112 @@
                 </a>
             {% endif %}
         </div>
+
+        <div class="col-6 text-end d-lg-none">
+            <div class="dropdown">
+                <button class="btn btn-primary dropdown-toggle" type="button" id="jobActionsDropdown"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                    {{ 'job.actions'|trans }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="jobActionsDropdown">
+                    {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_JOB_LIST')) %}
+                        <li>
+                            <a href="{{ path('job_queue_recurring_list') }}"
+                               class="dropdown-item">
+                                {{ 'job.recurring.list'|trans }}
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_COMMAND_SCHEDULE')) %}
+                        <li>
+                            <a href="{{ path('command_schedule', {'listId': relatedEntityId, 'listName': relatedEntityName}) }}"
+                               class="dropdown-item">
+                                {{ 'job.create_job'|trans }}
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
     </div>
 {% endblock %}
 
 {% block body %}
-    <table class="table table-hover">
-        <thead>
-        <tr>
-            <th>{{ 'job.command'|trans }}</th>
-            {% if relatedEntityId is not empty %}
-                <th>{{ 'job.list.related_entity_id'|trans }}</th>
-            {% endif %}
-            {% if relatedEntityName is not empty %}
-                <th>{{ 'job.list.related_entity_name'|trans }}</th>
-            {% endif %}
-            <th>{{ 'job.created'|trans }}</th>
-            <th>{{ 'job.state'|trans }}</th>
-            <th>{{ 'job.type'|trans }}</th>
-            <th></th>
-        </tr>
-        </thead>
-        <tbody>
-
-        {% for job in jobs %}
+    <div class="table-responsive d-none d-md-block">
+        <table class="table table-striped table-hover">
+            <thead>
             <tr>
-                <td><code>{{ job.command }} {{ job.commandParams|join(' ') }}</code></td>
-                {% if relatedEntityId is not empty %}
-                    <td>{{ relatedEntityId }}</td>
-                {% endif %}
-                {% if relatedEntityName is not empty %}
-                    <td>{{ relatedEntityName }}</td>
-                {% endif %}
-                <td>{{ job.createdAt|date('d.m.Y H:i:s') }}</td>
-                <td>{{ job.status }}</td>
-                <td>
-                    {{ job.type }}
-                    {% if job.type == constant('TomAtom\\JobQueueBundle\\Entity\\Job::TYPE_POSTPONED') %}
-                        {{ ' (' ~ job.startAt|date('Y-m-d H:i:s') ~ ') ' }}
-                    {% elseif job.type == constant('TomAtom\\JobQueueBundle\\Entity\\Job::TYPE_RECURRING') and job.jobRecurringParent is not empty %}
-                        {{ ' (' ~ job.jobRecurringParent.frequency ~ ') ' }}
-                    {% endif %}
-                </td>
-                <td class="text-end">
-                    {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_JOB_READ')) %}
-                        <a href="{{ path('job_queue_detail', {'id': job.id, 'listId': relatedEntityId, 'listName': relatedEntityName}) }}"
-                           class="btn btn-sm btn-secondary"
-                           role="button">{{ 'job.detail.self'|trans }}
-                        </a>
-                    {% endif %}
-                </td>
+                <th>{{ 'job.command'|trans }}</th>
+                <th class="d-none d-md-table-cell">{{ 'job.list.related_entity_id'|trans }}</th>
+                <th class="d-none d-md-table-cell">{{ 'job.list.related_entity_name'|trans }}</th>
+                <th>{{ 'job.created'|trans }}</th>
+                <th class="d-none d-sm-table-cell">{{ 'job.state'|trans }}</th>
+                <th class="d-none d-md-table-cell">{{ 'job.type'|trans }}</th>
+                <th></th>
             </tr>
+            </thead>
+            <tbody>
+            {% for job in jobs %}
+                <tr>
+                    <td><code>{{ job.command }} {{ job.commandParams|join(' ') }}</code></td>
+                    <td class="d-none d-md-table-cell">{{ relatedEntityId }}</td>
+                    <td class="d-none d-md-table-cell">{{ relatedEntityName }}</td>
+                    <td>{{ job.createdAt|date('d.m.Y H:i:s') }}</td>
+                    <td class="d-none d-sm-table-cell">{{ job.status }}</td>
+                    <td class="d-none d-md-table-cell">
+                        {{ job.type }}
+                        {% if job.type == constant('TomAtom\\JobQueueBundle\\Entity\\Job::TYPE_POSTPONED') %}
+                            {{ ' (' ~ job.startAt|date('Y-m-d H:i:s') ~ ') ' }}
+                        {% elseif job.type == constant('TomAtom\\JobQueueBundle\\Entity\\Job::TYPE_RECURRING') and job.jobRecurringParent is not empty %}
+                            {{ ' (' ~ job.jobRecurringParent.frequency ~ ') ' }}
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_JOB_READ')) %}
+                            <a href="{{ path('job_queue_detail', {'id': job.id, 'listId': relatedEntityId, 'listName': relatedEntityName}) }}"
+                               class="btn btn-sm btn-secondary">
+                                {{ 'job.detail.self'|trans }}
+                            </a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="d-block d-md-none">
+        {% for job in jobs %}
+            <div class="card mb-2" {% if loop.index % 2 %}style="background-color: #f2f2f2;"{% endif %}>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-8">
+                            <h5 class="card-title"><code>{{ job.command }} {{ job.commandParams|join(' ') }}</code></h5>
+                        </div>
+                        <div class="col-4 text-end">
+                            {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_JOB_READ')) %}
+                                <a href="{{ path('job_queue_detail', {'id': job.id, 'listId': relatedEntityId, 'listName': relatedEntityName}) }}"
+                                   class="btn btn-sm btn-secondary">
+                                    {{ 'job.detail.self'|trans }}
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <p class="card-text">
+                        <strong>{{ 'job.created'|trans }}:</strong> {{ job.createdAt|date('d.m.Y H:i:s') }} <br>
+                        <strong>{{ 'job.state'|trans }}:</strong> {{ job.status }} <br>
+                        <strong>{{ 'job.type'|trans }}:</strong> {{ job.type }}
+                    </p>
+                </div>
+            </div>
         {% endfor %}
-        </tbody>
-    </table>
+    </div>
+
+    <div class="d-flex justify-content-center my-4">
+        <div class="row paginator-wrap">
+            <div class="col-md-12">
+                {{ knp_pagination_render(pagination) }}
+            </div>
+        </div>
+    </div>
 {% endblock %}

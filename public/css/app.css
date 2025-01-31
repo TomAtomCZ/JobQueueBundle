@@ -1,0 +1,56 @@
+/* Job detail start */
+.terminal-output {
+    background-color: #1e1e1e;
+    color: #d4d4d4;
+    font-family: monospace;
+    font-size: 14px;
+    padding: 10px;
+    border-radius: 5px;
+    height: 400px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    border: 1px solid #333;
+}
+
+/* Job detail end */
+
+/* Pagination start */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    padding: 10px;
+}
+
+.pagination .current {
+    background-color: #d63384;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.pagination .page a,
+.pagination .first a,
+.pagination .next a,
+.pagination .previous a,
+.pagination .last a {
+    text-decoration: none;
+    color: black;
+    padding: 5px 10px;
+    border: 1px solid #d63384;
+    border-radius: 5px;
+    transition: background 0.2s, color 0.2s;
+}
+
+.pagination .page a:hover,
+.pagination .first a:hover,
+.pagination .next a:hover,
+.pagination .previous a:hover,
+.pagination .last a:hover {
+    background-color: #d63384;
+    color: white;
+}
+
+/* Pagination end */

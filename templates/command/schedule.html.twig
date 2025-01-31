@@ -1,14 +1,21 @@
 {% extends '@JobQueue/base.html.twig' %}
 
-{% block title %}{% if recurringJob is empty %}{{ 'command.title'|trans }}{% else %}{{ 'command.title_edit'|trans }}{% endif %}{% endblock %}
+{% block title %}{% if jobRecurring is empty %}{{ 'command.title'|trans }}{% else %}{{ 'command.title_edit'|trans }}{% endif %}{% endblock %}
 
 {% block header %}
     <div class="row align-items-center mt-4">
-        <div class="col-8 my-2">
-            <h1>{% if recurringJob is empty %}{{ 'command.title'|trans }}{% else %}{{ 'command.title_edit'|trans }} #{{ recurringJob.id }}{% endif %}</h1>
+        <div class="col-6 my-2">
+            <h1>{% if jobRecurring is empty %}{{ 'command.title'|trans }}{% else %}{{ 'command.title_edit'|trans }} #{{ jobRecurring.id }}{% endif %}</h1>
         </div>
-        {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_JOB_LIST')) %}
-            <div class="col-4 text-end">
+        <div class="col-6 d-none d-lg-block text-end">
+            {% if jobRecurring is not empty and is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_JOB_DELETE')) %}
+                <a href="{{ path('job_queue_delete_recurring', {'id': jobRecurring.id}) }}"
+                   class="btn btn-danger"
+                   onclick="return confirm('{{ 'job.deletion.confirm'|trans }}')">
+                    {{ 'job.deletion.action'|trans }}
+                </a>
+            {% endif %}
+            {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_JOB_LIST')) %}
                 <a href="{{ path('job_queue_list', {'id': listId, 'name': listName}) }}"
                    class="btn btn-secondary" role="button">
                     {{ 'job.job_list'|trans }}
@@ -17,14 +24,43 @@
                    class="btn btn-secondary" role="button">
                     {{ 'job.recurring.list'|trans }}
                 </a>
-            </div>
-        {% endif %}
-    </div>
-{% endblock %}
+            {% endif %}
+        </div>
 
-{% block javascripts %}
-    {{ parent() }}
-    <script src="{{ asset('bundles/jobqueue/js/command.js') }}"></script>
+        <div class="col-6 text-end d-lg-none">
+            <div class="dropdown">
+                <button class="btn btn-primary dropdown-toggle" type="button" id="jobActionsDropdown"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                    {{ 'job.actions'|trans }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="jobActionsDropdown">
+                    {% if jobRecurring is not empty and is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_JOB_DELETE')) %}
+                        <li>
+                            <a href="{{ path('job_queue_delete_recurring', {'id': jobRecurring.id}) }}"
+                               class="dropdown-item"
+                               onclick="return confirm('{{ 'job.deletion.confirm'|trans }}')">
+                                {{ 'job.deletion.action'|trans }}
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_JOB_LIST')) %}
+                        <li>
+                            <a href="{{ path('job_queue_list', {'id': listId, 'name': listName}) }}"
+                               class="dropdown-item">
+                                {{ 'job.job_list'|trans }}
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ path('job_queue_recurring_list') }}"
+                               class="dropdown-item">
+                                {{ 'job.recurring.list'|trans }}
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block body %}
@@ -32,17 +68,17 @@
         <div class="mt-3">
             <form method="post" action="{{ path('command_schedule_init', {'listId': listId, 'listName': listName}) }}"
                   name="command-schedule">
-                {% if recurringJob is not empty %}
+                {% if jobRecurring is not empty %}
                     <label for="command_edit"></label>
                     <input id="command_edit" name="command-schedule[editId]" hidden="hidden"
-                           value="{{ recurringJob.id }}">
+                           value="{{ jobRecurring.id }}">
                 {% endif %}
                 <label for="command_select">{{ 'command.select.label'|trans }}:</label>
                 <select id="command_select" class="form-select" name="command-schedule[command]" required="required">
                     <option value="">{{ 'command.select'|trans }}</option>
                     {% for command in commands %}
                         <option value="{{ command.name }}"
-                                {% if recurringJob is not empty and command.name == recurringJob.command %}selected="selected"{% endif %}
+                                {% if jobRecurring is not empty and command.name == jobRecurring.command %}selected="selected"{% endif %}
                                 {% for key, argument in command.definition.arguments %}
                                     {% if argument.required %}
                                         {% set argumentMode = 'REQUIRED' %}
@@ -82,7 +118,7 @@
                 <div class="my-3">
                     <label for="command_params">{{ 'command.params.label'|trans }}:</label>
                     <input id="command_params" name="command-schedule[params]" type="text" class="form-control"
-                           {% if recurringJob is not empty %}value="{{ recurringJob.commandParams|join(' ') }}"{% endif %}>
+                           {% if jobRecurring is not empty %}value="{{ jobRecurring.commandParams|join(' ') }}"{% endif %}>
                 </div>
 
                 {# Methods select #}
@@ -92,7 +128,7 @@
                         <option value="once">{{ 'command.select.method.once'|trans }}</option>
                         <option value="postponed">{{ 'command.select.method.postponed'|trans }}</option>
                         <option value="recurring"
-                                {% if recurringJob is not empty %}selected="selected"{% endif %}>
+                                {% if jobRecurring is not empty %}selected="selected"{% endif %}>
                             {{ 'command.select.method.recurring'|trans }}</option>
                     </select>
                 </div>
@@ -108,14 +144,14 @@
                 <div id="command_cron_div" class="my-3" style="display: none;">
                     <label for="command_cron">{{ 'command.recurring.label'|trans }}:</label>
                     <input id="command_cron" name="command-schedule[cron]" type="text" class="form-control"
-                           {% if recurringJob is not empty %}value="{{ recurringJob.frequency }}"{% endif %}>
+                           {% if jobRecurring is not empty %}value="{{ jobRecurring.frequency }}"{% endif %}>
                     <span><small>{{ 'command.recurring.help'|trans }}
                         - <a href="https://symfony.com/doc/current/scheduler.html#cron-expression-triggers"
                              target="_blank">Symfony Scheduler docs</a></small></span>
                     <div class="mt-2">
                         <label for="command_active">{{ 'job.active'|trans }}:</label>
                         <input id="command_active" name="command-schedule[active]" type="checkbox"
-                               {% if recurringJob is empty or (recurringJob is not empty and recurringJob.active) %}checked="checked"{% endif %}>
+                               {% if jobRecurring is empty or (jobRecurring is not empty and jobRecurring.active) %}checked="checked"{% endif %}>
                     </div>
                 </div>
 
@@ -129,7 +165,7 @@
                 </div>
 
                 <div class="d-flex justify-content-end">
-                    <button class="btn btn-success">{% if recurringJob is empty %}{{ 'command.schedule.job'|trans }}{% else %}{{ 'command.schedule.job_edit'|trans }}{% endif %}</button>
+                    <button class="btn btn-success">{% if jobRecurring is empty %}{{ 'command.schedule.job'|trans }}{% else %}{{ 'command.schedule.job_edit'|trans }}{% endif %}</button>
                 </div>
             </form>
         </div>
@@ -142,4 +178,9 @@
          data-mode="{{ 'command.mode'|trans }}"
          data-shortcut="{{ 'command.shortcut'|trans }}"
     ></div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('bundles/jobqueue/js/command.js') }}"></script>
 {% endblock %}

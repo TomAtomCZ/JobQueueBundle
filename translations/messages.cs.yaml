@@ -3,11 +3,13 @@ no: "Ne"
 
 job:
   job_list: "Seznam úloh"
-  create_job: "Vytvořit úlohu"
+  create_job: "Vytvořit novou úlohu"
   recreate_job: "Spustit znovu"
+  actions: "Akce"
   detail:
     self: "Detail"
     parent: "Nadřazená úloha"
+    recurring_parent: "Nadřazená opakovaná úloha"
     child: "Podřazená úloha"
     title: "Plánovaná úloha"
     refresh: "Obnovit"

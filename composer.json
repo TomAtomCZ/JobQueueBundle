@@ -29,6 +29,7 @@
     "doctrine/doctrine-bundle": "^2",
     "doctrine/orm": "^2|^3",
     "dragonmantank/cron-expression": "^3",
+    "knplabs/knp-paginator-bundle": "^6",
     "symfony/framework-bundle": "^6.4",
     "symfony/lock": "^6.4",
     "symfony/messenger": "^6.4",

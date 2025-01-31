@@ -3,11 +3,13 @@ no: "No"
 
 job:
   job_list: "Job list"
-  create_job: "Create job"
+  create_job: "Create new job"
   recreate_job: "Run again"
+  actions: "Actions"
   detail:
     self: "Detail"
     parent: "Parent job"
+    recurring_parent: "Parent recurring job"
     child: "Child job"
     title: "Planned job"
     refresh: "Refresh"
