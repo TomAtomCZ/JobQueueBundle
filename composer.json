@@ -1,6 +1,6 @@
 {
   "name": "tomatom/jobqueuebundle",
-  "description": "JMSJobQueueBundle alternative for Symfony 6+",
+  "description": "JMSJobQueueBundle alternative for Symfony 6+ with browser interface",
   "type": "symfony-bundle",
   "minimum-stability": "stable",
   "keywords": [
@@ -30,6 +30,8 @@
     "doctrine/orm": "^2|^3",
     "dragonmantank/cron-expression": "^3",
     "knplabs/knp-paginator-bundle": "^6",
+    "spiriitlabs/form-filter-bundle": "^11",
+    "symfony/form": "^6.4",
     "symfony/framework-bundle": "^6.4",
     "symfony/lock": "^6.4",
     "symfony/messenger": "^6.4",

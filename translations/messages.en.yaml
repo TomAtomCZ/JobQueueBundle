@@ -23,6 +23,8 @@ job:
     related_entity_id: "ID"
     related_entity_name: "Entity"
     back_to_list: "Back to jobs"
+    filter: "Filter"
+    reset: "Reset"
   header:
     for_entity_with_id: "for entity with ID"
     for: "for"
@@ -31,6 +33,7 @@ job:
   state: "State"
   type: "Type"
   created: "Created"
+  created_from_to: "Created from - to"
   start_at: "Start at"
   active: "Active"
   frequency: "Frequency"

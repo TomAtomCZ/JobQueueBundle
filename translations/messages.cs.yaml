@@ -23,6 +23,8 @@ job:
     related_entity_id: "ID"
     related_entity_name: "Entita"
     back_to_list: "Zpět na úlohy"
+    filter: "Filtrovat"
+    reset: "Reset"
   header:
     for_entity_with_id: "pro entitu s ID"
     for: "pro"
@@ -31,6 +33,7 @@ job:
   state: "Stav"
   type: "Typ"
   created: "Zadáno"
+  created_from_to: "Zadáno od - do"
   start_at: "Spustit v"
   active: "Aktivní"
   frequency: "Frekvence"

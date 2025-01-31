@@ -2,11 +2,14 @@
 
 namespace TomAtom\JobQueueBundle\Controller;
 
+use DateTime;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
+use Exception;
 use Knp\Component\Pager\PaginatorInterface;
+use Spiriit\Bundle\FormFilterBundle\Filter\FilterBuilderUpdater;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,6 +19,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 use TomAtom\JobQueueBundle\Entity\Job;
 use TomAtom\JobQueueBundle\Entity\JobRecurring;
 use TomAtom\JobQueueBundle\Exception\CommandJobException;
+use TomAtom\JobQueueBundle\Form\JobFilterType;
 use TomAtom\JobQueueBundle\Security\JobQueuePermissions;
 use TomAtom\JobQueueBundle\Service\CommandJobFactory;
 
@@ -61,30 +65,53 @@ class JobController extends AbstractController
 
     /**
      * @param Request $request
+     * @param FilterBuilderUpdater $filterQueryUpdater
      * @param int|null $id - Related entity id
      * @param string|null $name - Related entity class name (self::class)
      * @return Response
      */
     #[IsGranted(JobQueuePermissions::ROLE_JOB_LIST)]
     #[Route(path: '/list/{id?}/{name?}', name: 'job_queue_list')]
-    public function list(Request $request, ?int $id = null, ?string $name = null): Response
+    public function list(Request $request, FilterBuilderUpdater $filterQueryUpdater, ?int $id = null, ?string $name = null): Response
     {
         if (!empty($name) && !empty($id)) {
             $entity = $this->entityManager->getRepository($name)->find($id);
         }
 
-        $jobs = $this->entityManager->getRepository(Job::class)
+        $jobsQuery = $this->entityManager->getRepository(Job::class)
             ->createQueryBuilder('j');
 
         if (!empty($id)) {
-            $jobs = $jobs->where('j.relatedEntityId = :id')
+            $jobsQuery = $jobsQuery->where('j.relatedEntityId = :id')
                 ->setParameter('id', $id);
         }
 
-        $jobs = $jobs->orderBy('j.createdAt', 'DESC');
+        $jobsQuery = $jobsQuery->orderBy('j.createdAt', 'DESC');
+
+        // Get filters with created at transform
+        $filters = $request->query->all()['job_filter'] ?? [];
+
+        if (isset($filters['createdAt'])) {
+            foreach (['left_datetime', 'right_datetime'] as $key) {
+                if (!empty($filters['createdAt'][$key]) && is_string($filters['createdAt'][$key])) {
+                    try {
+                        $filters['createdAt'][$key] = new DateTime($filters['createdAt'][$key]);
+                    } catch (Exception $e) {
+                        $this->addFlash('warning', $e->getMessage());
+                        $filters['createdAt'][$key] = null;
+                    }
+                } elseif (empty($filters['createdAt'][$key])) {
+                    $filters['createdAt'][$key] = null;
+                }
+            }
+        }
+
+        $filterForm = $this->createForm(JobFilterType::class, $filters);
+        $filterForm->handleRequest($request);
+        $filterQueryUpdater->addFilterConditions($filterForm, $jobsQuery);
 
         $pagination = $this->paginator->paginate(
-            $jobs->getQuery(),
+            $jobsQuery->getQuery(),
             $request->query->getInt('page', 1),
             50
         );
@@ -92,9 +119,10 @@ class JobController extends AbstractController
 
         return $this->render('@JobQueue/job/list.html.twig', [
             'jobs' => $jobs,
+            'jobFilterForm' => $filterForm->createView(),
+            'pagination' => $pagination,
             'relatedEntityId' => $id,
-            'relatedEntity' => $entity ?? null,
-            'pagination' => $pagination
+            'relatedEntity' => $entity ?? null
         ]);
     }
 
@@ -137,7 +165,7 @@ class JobController extends AbstractController
                 $this->entityManager->remove($job);
                 $this->entityManager->flush();
                 $this->addFlash('success', $this->translator->trans('job.deletion.success'));
-            } catch (ORMException $e) {
+            } catch (Exception $e) {
                 $this->addFlash('danger', $this->translator->trans('job.deletion.error') . $e->getMessage());
             }
         } else {
@@ -152,7 +180,7 @@ class JobController extends AbstractController
 
     #[IsGranted(JobQueuePermissions::ROLE_JOB_DELETE)]
     #[Route(path: '/delete-recurring/{id<\d+>}', name: 'job_queue_delete_recurring')]
-    public function deleteRecurring(?JobRecurring $job, Request $request): Response
+    public function deleteRecurring(?JobRecurring $job): Response
     {
         if (empty($job)) {
             $this->addFlash('warning', $this->translator->trans('job.detail.error.not_found'));
@@ -164,7 +192,7 @@ class JobController extends AbstractController
             $this->entityManager->remove($job);
             $this->entityManager->flush();
             $this->addFlash('success', $this->translator->trans('job.deletion.success'));
-        } catch (ORMException $e) {
+        } catch (Exception $e) {
             $this->addFlash('danger', $this->translator->trans('job.deletion.error') . $e->getMessage());
         }
 
@@ -189,7 +217,7 @@ class JobController extends AbstractController
                 $job->setCancelledAt(new DateTimeImmutable());
                 $this->entityManager->flush();
                 $this->addFlash('success', $this->translator->trans('job.cancellation.success'));
-            } catch (ORMException $e) {
+            } catch (Exception $e) {
                 $this->addFlash('danger', $this->translator->trans('job.cancellation.error') . $e->getMessage());
             }
         } else {

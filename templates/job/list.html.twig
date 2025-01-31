@@ -60,13 +60,46 @@
 {% endblock %}
 
 {% block body %}
+    <div class="job-filters row align-items-end mb-3">
+        {{ form_start(jobFilterForm, {'method' : 'GET'}) }}
+        {{ form_errors(jobFilterForm) }}
+        <div class="row d-flex align-items-center">
+            <div class="col-md-4">
+                {{ form_label(jobFilterForm.command) }}
+                {{ form_widget(jobFilterForm.command) }}
+            </div>
+            <div class="col-md-4">
+                {{ form_label(jobFilterForm.status) }}
+                {{ form_widget(jobFilterForm.status) }}
+            </div>
+            <div class="col-md-4">
+                {{ form_label(jobFilterForm.type) }}
+                {{ form_widget(jobFilterForm.type) }}
+            </div>
+        </div>
+        <div class="row d-flex align-items-center">
+            <div class="col-md-8">
+                {{ form_label(jobFilterForm.createdAt) }}
+                <div class="filter-date-range">
+                    {{ form_widget(jobFilterForm.createdAt.left_datetime) }}
+                    {{ form_widget(jobFilterForm.createdAt.right_datetime) }}
+                </div>
+            </div>
+            <div class="col-md-4 buttons">
+                <a href="{{ path('job_queue_list', {'id': relatedEntityId, 'name': relatedEntityName}) }}"
+                   class="btn btn-light me-3"
+                   role="button">{{ 'job.list.reset'|trans }}</a>
+                {{ form_widget(jobFilterForm.submit) }}
+            </div>
+        </div>
+        {{ form_end(jobFilterForm) }}
+    </div>
+
     <div class="table-responsive d-none d-md-block">
         <table class="table table-striped table-hover">
             <thead>
             <tr>
                 <th>{{ 'job.command'|trans }}</th>
-                <th class="d-none d-md-table-cell">{{ 'job.list.related_entity_id'|trans }}</th>
-                <th class="d-none d-md-table-cell">{{ 'job.list.related_entity_name'|trans }}</th>
                 <th>{{ 'job.created'|trans }}</th>
                 <th class="d-none d-sm-table-cell">{{ 'job.state'|trans }}</th>
                 <th class="d-none d-md-table-cell">{{ 'job.type'|trans }}</th>
@@ -77,8 +110,6 @@
             {% for job in jobs %}
                 <tr>
                     <td><code>{{ job.command }} {{ job.commandParams|join(' ') }}</code></td>
-                    <td class="d-none d-md-table-cell">{{ relatedEntityId }}</td>
-                    <td class="d-none d-md-table-cell">{{ relatedEntityName }}</td>
                     <td>{{ job.createdAt|date('d.m.Y H:i:s') }}</td>
                     <td class="d-none d-sm-table-cell">{{ job.status }}</td>
                     <td class="d-none d-md-table-cell">

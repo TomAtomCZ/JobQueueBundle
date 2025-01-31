@@ -54,3 +54,34 @@
 }
 
 /* Pagination end */
+
+/* Job filters start */
+.job-filters {
+    .buttons {
+        margin-top: 2.4rem !important;
+    }
+
+    .buttons a, .buttons button {
+        width: 8rem;
+    }
+
+    .longer-td {
+        width: 7rem;
+    }
+
+    .col-form-label {
+        width: 50% !important;
+    }
+
+    @media screen and (min-width: 576px) {
+        .filter-date-range {
+            display: flex;
+        }
+
+        .filter-date-range input {
+            margin-right: 1rem;
+        }
+    }
+}
+
+/* Job filters end */

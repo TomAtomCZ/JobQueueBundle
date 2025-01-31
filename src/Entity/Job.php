@@ -20,9 +20,21 @@ class Job
     const STATUS_COMPLETED = 'completed';
     const STATUS_FAILED = 'failed';
     const STATUS_CANCELLED = 'cancelled';
+    const STATUSES = [
+        self::STATUS_PLANNED => self::STATUS_PLANNED,
+        self::STATUS_RUNNING => self::STATUS_RUNNING,
+        self::STATUS_COMPLETED => self::STATUS_COMPLETED,
+        self::STATUS_FAILED => self::STATUS_FAILED,
+        self::STATUS_CANCELLED => self::STATUS_CANCELLED,
+    ];
     const TYPE_ONCE = 'once';
     const TYPE_POSTPONED = 'postponed';
     const TYPE_RECURRING = 'recurring';
+    const TYPES = [
+        self::TYPE_ONCE => self::TYPE_ONCE,
+        self::TYPE_POSTPONED => self::TYPE_POSTPONED,
+        self::TYPE_RECURRING => self::TYPE_RECURRING,
+    ];
     const COMMAND_OUTPUT_PARAMS = 'OUTPUT PARAMS: ';
     const JOB_CANCELLED_MESSAGE = 'JOB CANCELLED';
 
