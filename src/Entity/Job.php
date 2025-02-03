@@ -8,11 +8,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use TomAtom\JobQueueBundle\Repository\JobRepository;
 
 #[ORM\MappedSuperclass]
-#[ORM\Entity(repositoryClass: JobRepository::class)]
-#[ORM\Table(name: "job_queue")]
 class Job
 {
     const STATUS_PLANNED = 'planned';

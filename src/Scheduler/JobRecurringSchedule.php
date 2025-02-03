@@ -4,6 +4,7 @@ namespace TomAtom\JobQueueBundle\Scheduler;
 
 namespace TomAtom\JobQueueBundle\Scheduler;
 
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Scheduler\Attribute\AsSchedule;
@@ -20,7 +21,8 @@ final class JobRecurringSchedule implements ScheduleProviderInterface
     public function __construct(
         private readonly EventDispatcherInterface $dispatcher,
         private readonly LockFactory              $lockFactory,
-        private readonly CacheInterface           $cache
+        private readonly CacheInterface           $cache,
+        private readonly ParameterBagInterface    $parameterBag,
     )
     {
     }
@@ -30,7 +32,7 @@ final class JobRecurringSchedule implements ScheduleProviderInterface
         $schedule = $this->schedule ??= new Schedule($this->dispatcher);
         if (count($schedule->getRecurringMessages()) === 0) {
             // Set heartbeat message to check periodically for recurring jobs to run in the PreRunEvent
-            $schedule->add(RecurringMessage::every(JobRecurring::HEARTBEAT_INTERVAL,
+            $schedule->add(RecurringMessage::every($this->parameterBag->get('job_queue.scheduling.heartbeat_interval'),
                 new JobRecurringMessage(JobRecurring::HEARTBEAT_MESSAGE, [])
             ))
                 ->lock($this->lockFactory->createLock(JobRecurring::SCHEDULER_NAME . '_' . JobRecurring::HEARTBEAT_MESSAGE));

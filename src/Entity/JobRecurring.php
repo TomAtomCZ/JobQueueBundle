@@ -7,16 +7,12 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use TomAtom\JobQueueBundle\Repository\JobRecurringRepository;
 
 #[ORM\MappedSuperclass]
-#[ORM\Entity(repositoryClass: JobRecurringRepository::class)]
-#[ORM\Table(name: "job_recurring_queue")]
 class JobRecurring
 {
-    public const SCHEDULER_NAME = 'job_recurring_schedule';
+    public const SCHEDULER_NAME = 'job_recurring';
     public const HEARTBEAT_MESSAGE = 'heartbeat';
-    public const HEARTBEAT_INTERVAL = '1 minute';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
