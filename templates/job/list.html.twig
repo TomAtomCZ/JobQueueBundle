@@ -2,15 +2,14 @@
 
 {% block title %}{{ 'job.job_list'|trans }}{% endblock %}
 
-{% set relatedEntityName = relatedEntity is not empty ? constant('class', relatedEntity) : null %}
-
 {% block header %}
     <div class="row align-items-center mt-4">
         <div class="col-6 my-2">
             <h1>{{ 'job.job_list'|trans }}
-                {% if relatedEntity is not empty %}
-                    {{ 'job.header.for'|trans }} <strong>{{ relatedEntity }}</strong>
-                {% elseif relatedEntity is empty and relatedEntityId is not empty %}
+                {% if relatedEntityName is not empty %}
+                    {{ 'job.header.for'|trans }} <strong>{{ relatedEntityName }}</strong>
+                {% endif %}
+                {% if relatedEntityId is not empty %}
                     {{ 'job.header.for_entity_with_id'|trans ~ ' ' ~ relatedEntityId }}
                 {% endif %}
             </h1>
@@ -86,7 +85,7 @@
                 </div>
             </div>
             <div class="col-md-4 buttons">
-                <a href="{{ path('job_queue_list', {'id': relatedEntityId, 'name': relatedEntityName}) }}"
+                <a href="{{ path('job_queue_list', {'name': relatedEntityName, 'id': relatedEntityId}) }}"
                    class="btn btn-light me-3"
                    role="button">{{ 'job.list.reset'|trans }}</a>
                 {{ form_widget(jobFilterForm.submit) }}

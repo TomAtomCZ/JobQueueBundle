@@ -2,17 +2,15 @@
 
 {% block title %}{{ 'job.detail.title'|trans }}{% endblock %}
 
-{% set relatedEntityId = job.relatedEntityId|default(null) %}
-{% set relatedEntityName = relatedEntity is not empty ? constant('class', relatedEntity) : null %}
-
 {% block header %}
     <div class="row align-items-center mt-4">
         <div class="col-8 my-2">
             <h1>
                 {{ 'job.detail.title'|trans }} {{ job.id }}
-                {% if relatedEntity is not empty %}
-                    {{ 'job.header.for'|trans }} <strong>{{ relatedEntity }}</strong>
-                {% elseif relatedEntity is empty and relatedEntityId is not empty %}
+                {% if relatedEntityName is not empty %}
+                    {{ 'job.header.for'|trans }} <strong>{{ relatedEntityName }}</strong>
+                {% endif %}
+                {% if relatedEntityId is not empty %}
                     {{ 'job.header.for_entity_with_id'|trans ~ ' ' ~ relatedEntityId }}
                 {% endif %}
             </h1>
@@ -26,7 +24,7 @@
                 </a>
             {% endif %}
             {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_JOB_LIST')) %}
-                <a href="{{ path('job_queue_list', {'id': relatedEntityId, 'name': relatedEntityName}) }}"
+                <a href="{{ path('job_queue_list', {'name': relatedEntityName, 'id': relatedEntityId}) }}"
                    class="btn btn-secondary">
                     {{ 'job.job_list'|trans }}
                 </a>
@@ -59,7 +57,7 @@
                     {% if is_granted(constant('TomAtom\\JobQueueBundle\\Security\\JobQueuePermissions::ROLE_JOB_LIST')) %}
                         <li>
                             <a class="dropdown-item"
-                               href="{{ path('job_queue_list', {'id': relatedEntityId, 'name': relatedEntityName}) }}">
+                               href="{{ path('job_queue_list', {'name': relatedEntityName, 'id': relatedEntityId}) }}">
                                 {{ 'job.job_list'|trans }}
                             </a>
                         </li>

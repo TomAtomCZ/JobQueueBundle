@@ -18,6 +18,7 @@ job:
     output: "Výstup"
     error:
       not_found: "Úloha nenalezena"
+      related_entity_not_found: "Přiřazená entita nebyla nalezena"
   list:
     title: "Plánované úlohy"
     related_entity_id: "ID"
@@ -26,8 +27,8 @@ job:
     filter: "Filtrovat"
     reset: "Reset"
   header:
-    for_entity_with_id: "pro entitu s ID"
-    for: "pro"
+    for_entity_with_id: "s ID"
+    for: "pro entitu"
   command: "Příkaz"
   command_params: "Parametry"
   state: "Stav"

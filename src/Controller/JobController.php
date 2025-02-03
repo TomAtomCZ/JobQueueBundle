@@ -54,12 +54,17 @@ class JobController extends AbstractController
 
         if (!empty($job->getRelatedEntityClassName()) && !empty($job->getRelatedEntityId())) {
             // Get related entity if job has one
-            $entity = $this->entityManager->getRepository($job->getRelatedEntityClassName())->find($job->getRelatedEntityId());
+            $entity = $this->entityManager->getRepository($job->getRelatedEntityClassName(true))->find($job->getRelatedEntityId());
+            if (empty($entity)) {
+                $this->addFlash('warning', $this->translator->trans('job.detail.error.related_entity_not_found'));
+            }
         }
 
         return $this->render('@JobQueue/job/detail.html.twig', [
             'job' => $job,
-            'relatedEntity' => $entity ?? null
+            'relatedEntity' => $entity ?? null,
+            'relatedEntityId' => $job->getRelatedEntityId(),
+            'relatedEntityName' => $job->getRelatedEntityClassName()
         ]);
     }
 
@@ -71,18 +76,25 @@ class JobController extends AbstractController
      * @return Response
      */
     #[IsGranted(JobQueuePermissions::ROLE_JOB_LIST)]
-    #[Route(path: '/list/{id?}/{name?}', name: 'job_queue_list')]
-    public function list(Request $request, FilterBuilderUpdater $filterQueryUpdater, ?int $id = null, ?string $name = null): Response
+    #[Route(path: '/list/{name}/{id}', name: 'job_queue_list', defaults: ['name' => null, 'id' => null])]
+    public function list(Request $request, FilterBuilderUpdater $filterQueryUpdater, ?string $name = null, ?int $id = null): Response
     {
         if (!empty($name) && !empty($id)) {
-            $entity = $this->entityManager->getRepository($name)->find($id);
+            $entity = $this->entityManager->getRepository(str_starts_with($name, 'App\\Entity\\') ? $name : 'App\\Entity\\' . $name)->find($id);
+            if (empty($entity)) {
+                $this->addFlash('warning', $this->translator->trans('job.detail.error.related_entity_not_found'));
+            }
         }
 
         $jobsQuery = $this->entityManager->getRepository(Job::class)
             ->createQueryBuilder('j');
 
+        if (!empty($name)) {
+            $jobsQuery = $jobsQuery->andWhere('j.relatedEntityClassName = :name')
+                ->setParameter('name', $name);
+        }
         if (!empty($id)) {
-            $jobsQuery = $jobsQuery->where('j.relatedEntityId = :id')
+            $jobsQuery = $jobsQuery->andWhere('j.relatedEntityId = :id')
                 ->setParameter('id', $id);
         }
 
@@ -121,8 +133,9 @@ class JobController extends AbstractController
             'jobs' => $jobs,
             'jobFilterForm' => $filterForm->createView(),
             'pagination' => $pagination,
+            'relatedEntity' => $entity ?? null,
             'relatedEntityId' => $id,
-            'relatedEntity' => $entity ?? null
+            'relatedEntityName' => $name
         ]);
     }
 

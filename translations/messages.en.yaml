@@ -18,6 +18,7 @@ job:
     output: "Output"
     error:
       not_found: "Job not found"
+      related_entity_not_found: "Related entity not found"
   list:
     title: "Planned jobs"
     related_entity_id: "ID"
@@ -26,7 +27,7 @@ job:
     filter: "Filter"
     reset: "Reset"
   header:
-    for_entity_with_id: "for entity with ID"
+    for_entity_with_id: "with ID"
     for: "for"
   command: "Command"
   command_params: "Parameters"

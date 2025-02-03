@@ -156,10 +156,14 @@ class Job
     }
 
     /**
+     * @param bool $withPath
      * @return string|null
      */
-    public function getRelatedEntityClassName(): ?string
+    public function getRelatedEntityClassName(bool $withPath = false): ?string
     {
+        if ($withPath) {
+            return str_starts_with($this->relatedEntityClassName, 'App\\Entity\\') ? $this->relatedEntityClassName : 'App\\Entity\\' . $this->relatedEntityClassName;
+        }
         return $this->relatedEntityClassName;
     }
 

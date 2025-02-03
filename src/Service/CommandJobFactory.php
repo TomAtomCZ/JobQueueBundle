@@ -33,16 +33,16 @@ class CommandJobFactory
      * @param string $commandName - Command name
      * @param array $commandParams - Command params
      * @param int|null $entityId - Entity ID
-     * @param string|null $entityClassName - Entity class name (self:class)
+     * @param string|null $entityClassName - Entity class name
      * @param Job|null $parentJob - Parent Job entity
-     * @param JobRecurring|null $jobRecurring - Recurring job from which was created
-     * @param DateTimeImmutable|null $startAt - Postpone job at time
+     * @param JobRecurring|null $parentJobRecurring - Recurring job from which was created
+     * @param DateTimeImmutable|null $postponedStartAt - Postponed job start time
      * @return Job
      * @throws CommandJobException
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function createCommandJob(string $commandName, array $commandParams, int $entityId = null, string $entityClassName = null, Job $parentJob = null, JobRecurring $jobRecurring = null, ?DateTimeImmutable $startAt = null): Job
+    public function createCommandJob(string $commandName, array $commandParams, int $entityId = null, string $entityClassName = null, Job $parentJob = null, JobRecurring $parentJobRecurring = null, ?DateTimeImmutable $postponedStartAt = null): Job
     {
         // Check if user is loaded and is granted job creation
         if ($this->security->getUser() && !$this->security->isGranted(JobQueuePermissions::ROLE_JOB_CREATE)) {
@@ -50,15 +50,15 @@ class CommandJobFactory
         }
 
         // Job has to be only one of recurring or postponed
-        if ($jobRecurring && $startAt) {
+        if ($parentJobRecurring && $postponedStartAt) {
             throw new CommandJobException($this->translator->trans('job.creation.error_recurring_start_at'));
         }
 
         // Get job type
         $type = Job::TYPE_ONCE;
-        if ($startAt) {
+        if ($postponedStartAt) {
             $type = Job::TYPE_POSTPONED;
-        } else if ($jobRecurring) {
+        } else if ($parentJobRecurring) {
             $type = Job::TYPE_RECURRING;
         }
 
@@ -76,17 +76,17 @@ class CommandJobFactory
             ->setRelatedEntityClassName($entityClassName)
             ->setRelatedParent($parentJob)
             ->setType($type)
-            ->setStartAt($startAt)
-            ->setJobRecurringParent($jobRecurring);
+            ->setStartAt($postponedStartAt)
+            ->setJobRecurringParent($parentJobRecurring);
 
         $this->entityManager->persist($job);
         $this->entityManager->flush();
 
         // Dispatch the message to the message bus
         $message = new JobMessage($job->getId());
-        if ($startAt) {
+        if ($postponedStartAt) {
             // Set delay if is postponed in milliseconds
-            $delay = $startAt->getTimestamp() - (new DateTime())->getTimestamp();
+            $delay = $postponedStartAt->getTimestamp() - (new DateTime())->getTimestamp();
             $message = new Envelope($message, [new DelayStamp($delay * 1000)]);
         }
         $this->messageBus->dispatch($message);
