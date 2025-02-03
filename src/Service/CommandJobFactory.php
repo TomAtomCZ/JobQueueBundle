@@ -2,6 +2,7 @@
 
 namespace TomAtom\JobQueueBundle\Service;
 
+use Cron\CronExpression;
 use DateTime;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
@@ -152,14 +153,17 @@ class CommandJobFactory
     {
         $frequency = trim($frequency);
 
-        if (preg_match("/[a-z]/i", $frequency) && (!str_starts_with($frequency, '@') && !str_starts_with($frequency, '#'))) {
+        if (preg_match("/[a-z]/i", $frequency)) {
             // String cron expressions needs to start with @ or #
-            return '@' . $frequency;
+            if (!str_starts_with($frequency, '@') && !str_starts_with($frequency, '#')) {
+                $frequency = '@' . $frequency;
+            }
+
+            return $frequency;
         }
 
-        $cronPattern = '/^(\*|[0-5]?\d) (\*|[0-1]?\d|2[0-3]) (\*|0?[1-9]|[12]\d|3[01]) (\*|0?[1-9]|1[0-2]) (\*|[0-6])$/';
-        if (!preg_match($cronPattern, $frequency)) {
-            // Cron pattern does not match (* * * * *)
+        if (!CronExpression::isValidExpression($frequency)) {
+            // Cron pattern is not valid
             throw new CommandJobException($this->translator->trans('job.recurring.frequency.error'));
         }
 
