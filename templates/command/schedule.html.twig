@@ -76,41 +76,45 @@
                 <label for="command_select">{{ 'command.select.label'|trans }}:</label>
                 <select id="command_select" class="form-select" name="command-schedule[command]" required="required">
                     <option value="">{{ 'command.select'|trans }}</option>
-                    {% for command in commands %}
-                        <option value="{{ command.name }}"
-                                {% if jobRecurring is not empty and command.name == jobRecurring.command %}selected="selected"{% endif %}
-                                {% for key, argument in command.definition.arguments %}
-                                    {% if argument.required %}
-                                        {% set argumentMode = 'REQUIRED' %}
-                                    {% elseif argument.array %}
-                                        {% set argumentMode = 'IS_ARRAY' %}
-                                    {% else %}
-                                        {% set argumentMode = 'OPTIONAL' %}
-                                    {% endif %}
-                                    data-command_argument_name_{{ key }}="{{ argument.name }}"
-                                    data-command_argument_description_{{ key }}="{{ argument.description }}"
-                                    data-command_argument_mode_{{ key }}="{{ argumentMode }}"
-                                {% endfor %}
-                                {% for key, option in command.definition.options %}
-                                    {% if option.valueRequired %}
-                                        {% set optionMode = 'VALUE_REQUIRED' %}
-                                    {% elseif option.valueOptional %}
-                                        {% set optionMode = 'VALUE_OPTIONAL' %}
-                                    {% elseif option.array %}
-                                        {% set optionMode = 'VALUE_IS_ARRAY' %}
-                                    {% elseif option.negatable %}
-                                        {% set optionMode = 'VALUE_NEGATABLE' %}
-                                    {% else %}
-                                        {% set optionMode = 'VALUE_NONE' %}
-                                    {% endif %}
-                                    data-command_option_name_{{ key }}="{{ option.name }}"
-                                    data-command_option_description_{{ key }}="{{ option.description }}"
-                                    data-command_option_mode_{{ key }}="{{ optionMode }}"
-                                    data-command_option_shortcut_{{ key }}="{{ option.shortcut }}"
-                                {% endfor %}
-                        >
-                            {{ command.name }} - {{ command.description }}
-                        </option>
+                    {% for commandGroupName, commandGroup in commands %}
+                        <optgroup label={{ commandGroupName }}>
+                            {% for command in commandGroup %}
+                                <option value="{{ command.name }}"
+                                        {% if jobRecurring is not empty and command.name == jobRecurring.command %}selected="selected"{% endif %}
+                                        {% for key, argument in command.definition.arguments %}
+                                            {% if argument.required %}
+                                                {% set argumentMode = 'REQUIRED' %}
+                                            {% elseif argument.array %}
+                                                {% set argumentMode = 'IS_ARRAY' %}
+                                            {% else %}
+                                                {% set argumentMode = 'OPTIONAL' %}
+                                            {% endif %}
+                                            data-command_argument_name_{{ key }}="{{ argument.name }}"
+                                            data-command_argument_description_{{ key }}="{{ argument.description }}"
+                                            data-command_argument_mode_{{ key }}="{{ argumentMode }}"
+                                        {% endfor %}
+                                        {% for key, option in command.definition.options %}
+                                            {% if option.valueRequired %}
+                                                {% set optionMode = 'VALUE_REQUIRED' %}
+                                            {% elseif option.valueOptional %}
+                                                {% set optionMode = 'VALUE_OPTIONAL' %}
+                                            {% elseif option.array %}
+                                                {% set optionMode = 'VALUE_IS_ARRAY' %}
+                                            {% elseif option.negatable %}
+                                                {% set optionMode = 'VALUE_NEGATABLE' %}
+                                            {% else %}
+                                                {% set optionMode = 'VALUE_NONE' %}
+                                            {% endif %}
+                                            data-command_option_name_{{ key }}="{{ option.name }}"
+                                            data-command_option_description_{{ key }}="{{ option.description }}"
+                                            data-command_option_mode_{{ key }}="{{ optionMode }}"
+                                            data-command_option_shortcut_{{ key }}="{{ option.shortcut }}"
+                                        {% endfor %}
+                                >
+                                    {{ command.name }} - {{ command.description }}
+                                </option>
+                            {% endfor %}
+                        </optgroup>
                     {% endfor %}
                 </select>
 

@@ -143,9 +143,28 @@ class CommandController extends AbstractController
     private function getApplicationCommands(KernelInterface $kernel): array
     {
         $application = new Application($kernel);
-        $commands = $application->all();
-        unset($commands['_complete'], $commands['completion']);
-        ksort($commands);
+        $commands = [];
+        foreach ($application->all() as $command) {
+            if (str_starts_with($command->getName(), '_')) {
+                // Unset internal commands
+                continue;
+            }
+            if (str_contains($command->getName(), ':')) {
+                // Make command groups by first command part (app:|make: etc.)
+                $key = explode(':', $command->getName())[0];
+                $commands[$key][] = $command;
+            } else {
+                $commands['uncategorized'][] = $command;
+            }
+        }
+
+        // Ensure uncategorized commands are last
+        uksort($commands, function ($a, $b) {
+            if ($a === 'uncategorized') return 1;
+            if ($b === 'uncategorized') return -1;
+            return $a <=> $b;
+        });
+
         return $commands;
     }
 }
