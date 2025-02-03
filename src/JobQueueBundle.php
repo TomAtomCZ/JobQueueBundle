@@ -37,7 +37,7 @@ class JobQueueBundle extends AbstractBundle
     public function loadExtension(array $config, ContainerConfigurator $container, ContainerBuilder $builder): void
     {
         // Load services
-        $container->import($this->getPath() . '/config/services.yaml');
+        $container->import($this->getPath() . '/config/services.xml');
 
         // Get application security roles
         $roleHierarchy = $builder->hasParameter('security.role_hierarchy.roles')
