@@ -371,7 +371,7 @@ translations/messages.{locale}.yaml:
 ## TODO:
 
 Add tests<br>
-Handle getting changes of recurring jobs in better way
+[Handle getting changes of recurring jobs in better way](/../../issues/3)
 
 ## Contributing:
 
