@@ -110,7 +110,7 @@ class CommandJobFactory
     {
         // Validate frequency and duplicates
         $frequency = $this->validateFrequency($frequency);
-        if ($this->entityManager->getRepository(JobRecurring::class)->isAlreadyCreated($commandName, $params, $frequency, $active)) {
+        if (!$jobRecurring && $this->entityManager->getRepository(JobRecurring::class)->isAlreadyCreated($commandName, $params, $frequency, $active)) {
             throw new CommandJobException($this->translator->trans('job.creation.error_already_exists'));
         }
 
