@@ -11,6 +11,7 @@ use Exception;
 use Knp\Component\Pager\PaginatorInterface;
 use Spiriit\Bundle\FormFilterBundle\Filter\FilterBuilderUpdater;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -274,5 +275,14 @@ class JobController extends AbstractController
             'listId' => $listId,
             'listName' => $listName
         ]);
+    }
+
+    #[Route(path: '/ajax/update-output/{id<\d+>}', name: 'job_queue_ajax_update_output')]
+    public function ajaxUpdateOutput(Job $job): Response
+    {
+        return new JsonResponse([
+            'output' => $job->getOutput(),
+            'finished' => !$job->isRunning() && !$job->isPlanned()
+        ], Response::HTTP_OK, ['Content-Type' => 'application/json']);
     }
 }

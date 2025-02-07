@@ -329,6 +329,8 @@ Available urls:
 |------------------------------------------------------------------|--------------------------------------------------|------------------------------------------------------|
 | <img src="docs/img_schedule_command.png" alt="Schedule Command"> | <img src="docs/img_job_list.png" alt="Job List"> | <img src="docs/img_job_detail.png" alt="Job Detail"> |
 
+Job detail gets updated automatically while the job is running.
+
 **All the pages are also responsive for mobile use.**
 
 Extending the templates can be done like this:

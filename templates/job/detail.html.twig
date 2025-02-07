@@ -85,7 +85,10 @@
         <tr>
             <th>{{ 'job.state'|trans }}</th>
             <td>
-                {{ job.status }}
+                <span id="jobStatus"
+                      data-status_planned="{{ constant('TomAtom\\JobQueueBundle\\Entity\\Job::STATUS_PLANNED') }}"
+                      data-status_running="{{ constant('TomAtom\\JobQueueBundle\\Entity\\Job::STATUS_RUNNING') }}"
+                >{{ job.status }}</span>
                 {% if job.planned %}
                     <a href="{{ path('job_queue_detail', {'id': job.id, 'listId': relatedEntityId, 'listName': relatedEntityName}) }}"
                        class="btn btn-sm btn-success mx-2" role="button">
@@ -157,23 +160,15 @@
         </a>
     {% endif %}
 
-    {% if job.output is not empty %}
+    <div {% if job.output is empty %}style="display: none;"{% endif %}>
         <h3 class="mb-3 mt-2">{{ 'job.detail.output'|trans }}</h3>
-        <pre id="jobOutput" class="terminal-output">{{ job.output }}</pre>
-    {% endif %}
+        <pre id="jobOutput" class="terminal-output"
+             data-ajax_path="{{ path('job_queue_ajax_update_output', {'id': job.id}) }}"
+             data-job_id="{{ job.id }}">{{ job.output }}</pre>
+    </div>
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
-    <script>
-        // Scroll to the end of the output params
-        function scrollToBottom() {
-            const jobOutput = document.getElementById('jobOutput');
-            if (jobOutput) {
-                jobOutput.scrollTop = jobOutput.scrollHeight;
-            }
-        }
-
-        document.addEventListener("DOMContentLoaded", scrollToBottom);
-    </script>
+    <script src="{{ asset('bundles/jobqueue/js/job.js') }}"></script>
 {% endblock %}
