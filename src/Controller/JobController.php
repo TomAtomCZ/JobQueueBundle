@@ -278,11 +278,26 @@ class JobController extends AbstractController
     }
 
     #[Route(path: '/ajax/update-output/{id<\d+>}', name: 'job_queue_ajax_update_output')]
-    public function ajaxUpdateOutput(Job $job): Response
+    public function ajaxUpdateOutput(Job $job, Request $request): Response
     {
-        return new JsonResponse([
-            'output' => $job->getOutput(),
-            'finished' => !$job->isRunning() && !$job->isPlanned()
-        ], Response::HTTP_OK, ['Content-Type' => 'application/json']);
+        // Get the current length of the output on frontend and the job current one
+        $lastLength = (int)$request->query->get('length', 0);
+        $output = $job->getOutput();
+        $totalLength = mb_strlen($output, 'UTF-8');
+
+        // Only return new part of the job output that isn't shown on the frontend
+        $updatedOutput = '';
+        if ($totalLength > $lastLength) {
+            $updatedOutput = mb_substr($output, $lastLength, null, 'UTF-8');
+        }
+
+        // Return output and length with json encoding options to prevent encoding issues
+        $response = new JsonResponse([
+            'output' => $updatedOutput,
+            'length' => $totalLength,
+            'finished' => !$job->isRunning() && !$job->isPlanned(),
+        ]);
+        $response->setEncodingOptions(JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+        return $response;
     }
 }

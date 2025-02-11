@@ -8,55 +8,71 @@ document.addEventListener("DOMContentLoaded", function () {
     const STATUS_PLANNED = jobStatus.dataset.status_planned.trim();
 
     let autoScrollEnabled = true;
-    let previousOutput = '';
+    let isFetching = false;
+    let currentLength = jobOutput.innerHTML.length;
+    let currentSequence = 0;
+    let latestSequence = 0;
     let interval;
 
     // Scroll to input bottom on page load
     scrollToBottom(jobOutput);
 
-    // Set auto scroll of output by if user has scrolled up in the output
+    // Set auto scroll of output if user is near the bottom
     jobOutput.addEventListener('scroll', () => {
         const nearBottom = jobOutput.scrollHeight - jobOutput.scrollTop - jobOutput.clientHeight;
         autoScrollEnabled = nearBottom <= 10;
     });
 
-    // Set interval for ajax update of the job page if job is planned or running
+    // Set interval for ajax update if job is planned or running
     if ([STATUS_RUNNING, STATUS_PLANNED].includes(jobStatus.innerHTML.trim())) {
         interval = setInterval(() => {
-            ajaxUpdateOutput(jobOutput);
+            ajaxUpdateOutput();
             if (autoScrollEnabled) {
                 scrollToBottom(jobOutput);
             }
-        }, jobStatus.innerHTML.trim() === STATUS_PLANNED ? 5000 : 500);
+        }, jobStatus.innerHTML.trim() === STATUS_PLANNED ? 5000 : 500); // 5s for planned 0.5s for running
     }
 
     // Scroll to the bottom of the output
-    function scrollToBottom(jobOutput) {
-        jobOutput.scrollTo({top: jobOutput.scrollHeight, behavior: 'instant'});
+    function scrollToBottom(elem) {
+        elem.scrollTo({top: elem.scrollHeight, behavior: 'instant'});
     }
 
     // Update the job output when job is running
-    function ajaxUpdateOutput(jobOutput) {
+    function ajaxUpdateOutput() {
+        // Prevent starting a new request if one is already being fetched
+        if (isFetching) return;
+        isFetching = true;
+
+        currentSequence++;
+        const thisRequestSequence = currentSequence;
         const ajaxPath = jobOutput.dataset.ajax_path;
-        fetch(ajaxPath, {method: 'GET'})
+        const separator = ajaxPath.includes('?') ? '&' : '?';
+
+        fetch(`${ajaxPath}${separator}length=${currentLength}`, {method: 'GET'})
             .then(response => response.json())
             .then(data => {
-                if (data.output && data.output.length > 0 && data.output !== previousOutput) {
-                    // If the job is planned refresh the page
+                // Only process the response if it's the latest one.
+                if (thisRequestSequence < latestSequence) return;
+                latestSequence = thisRequestSequence;
+
+                if (data.output && data.output.length > 0) {
                     if (jobStatus.innerHTML.trim() === STATUS_PLANNED) {
+                        // If the job is planned refresh the page
                         setTimeout(() => window.location.reload(), 500);
                         return;
                     } else {
-                        // Update output if the job is running
                         if (jobOutput.parentElement.style.display === 'none') {
+                            // Update output if the job is running
                             jobOutput.parentElement.style.display = 'block';
                         }
-                        jobOutput.innerHTML = data.output;
-                        previousOutput = data.output;
+                        // Append output to the current output and update current length
+                        jobOutput.innerHTML += data.output;
+                        currentLength = data.length;
                     }
                 }
 
-                // When the job is finished, clear the interval so no further requests are made and refresh the page
+                // When the job is finished, clear the interval and refresh
                 if (data.finished) {
                     clearInterval(interval);
                     setTimeout(() => window.location.reload(), 500);
@@ -64,6 +80,10 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .catch(error => {
                 console.error('Error fetching output:', error);
+            })
+            .finally(() => {
+                // Release the lock so the next request can proceed
+                isFetching = false;
             });
     }
 });
