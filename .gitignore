@@ -7,6 +7,7 @@ vendor/
 docker-compose.yml
 Dockerfile
 docker/
+composer.lock
 .phpunit.cache/
 .phpunit.result.cache
 phpunit.xml.dist.bak

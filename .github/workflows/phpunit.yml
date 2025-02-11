@@ -29,8 +29,8 @@ jobs:
       - name: Set Symfony Version
         run: echo "export SYMFONY_REQUIRE=${{ matrix.symfony }}" >> $GITHUB_ENV
 
-      - name: Install Dependencies
-        run: composer install --prefer-dist --no-progress
+      - name: Resolve Dependencies
+        run: composer update --prefer-dist --no-progress
 
       - name: Ensure Symfony Version
         run: composer require symfony/symfony:${{ matrix.symfony }} --with-all-dependencies
