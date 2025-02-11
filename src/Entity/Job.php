@@ -38,7 +38,7 @@ class Job
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER)]
-    private ?int $id;
+    private ?int $id = null;
 
     #[ORM\Column(length: 255)]
     private ?string $status = null;
@@ -97,7 +97,6 @@ class Job
     {
         $this->relatedChildren = new ArrayCollection();
         $this->createdAt = new DateTimeImmutable();
-        $this->startAt = new DateTimeImmutable();
         $this->type = self::TYPE_ONCE;
     }
 
@@ -390,7 +389,7 @@ class Job
      */
     public function setStartAt(?DateTimeImmutable $startAt): Job
     {
-        $this->startAt = $startAt;
+        $startAt === null ? $this->startAt = new DateTimeImmutable() : $this->startAt = $startAt;
         return $this;
     }
 
