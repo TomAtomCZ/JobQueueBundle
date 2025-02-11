@@ -26,6 +26,9 @@ jobs:
           extensions: mbstring, intl, pdo_mysql
           ini-values: post_max_size=256M, upload_max_filesize=256M
 
+      - name: Set Symfony Version
+        run: echo "export SYMFONY_REQUIRE=${{ matrix.symfony }}" >> $GITHUB_ENV
+
       - name: Install Dependencies
         run: composer install --prefer-dist --no-progress
 
