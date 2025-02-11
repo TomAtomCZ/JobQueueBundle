@@ -120,11 +120,11 @@
         </tr>
         <tr>
             <th>{{ 'job.created'|trans }}</th>
-            <td>{{ job.createdAt|date }}</td>
+            <td>{{ job.createdAt|date('d.m.Y H:i:s') }}</td>
         </tr>
         <tr>
             <th>{{ 'job.start_at'|trans }}</th>
-            <td>{{ job.startAt|date }}</td>
+            <td>{{ job.startAt|date('d.m.Y H:i:s') }}</td>
         </tr>
 
         {% if job.closedAt %}
@@ -134,7 +134,7 @@
             </tr>
             <tr>
                 <th>{{ 'job.detail.closed'|trans }}</th>
-                <td>{{ job.closedAt|date }}</td>
+                <td>{{ job.closedAt|date('d.m.Y H:i:s') }}</td>
             </tr>
         {% endif %}
     </table>

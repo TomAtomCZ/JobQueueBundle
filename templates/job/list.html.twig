@@ -114,7 +114,7 @@
                     <td class="d-none d-md-table-cell">
                         {{ job.type }}
                         {% if job.type == constant('TomAtom\\JobQueueBundle\\Entity\\Job::TYPE_POSTPONED') %}
-                            {{ ' (' ~ job.startAt|date('Y-m-d H:i:s') ~ ') ' }}
+                            {{ ' (' ~ job.startAt|date('d.m.Y H:i:s') ~ ') ' }}
                         {% elseif job.type == constant('TomAtom\\JobQueueBundle\\Entity\\Job::TYPE_RECURRING') and job.jobRecurringParent is not empty %}
                             {{ ' (' ~ job.jobRecurringParent.frequency ~ ') ' }}
                         {% endif %}
