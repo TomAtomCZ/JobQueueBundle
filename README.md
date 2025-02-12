@@ -16,11 +16,12 @@
     - [Job Types](#types-of-ways-jobs-can-be-run)
     - [Creating Jobs Programmatically](#manually-creating-the-jobs-in-your-application)
     - [Creating Jobs via Browser](#creating-jobs-via-the-browser-interface)
-5. [Dependencies](#dependencies)
-6. [TODO](#todo)
-7. [Contributing](#contributing)
+5. [Testing](#testing)
+6. [Dependencies](#dependencies)
+7. [TODO](#todo)
+8. [Additional info / Contributing](#additional-info--contributing)
 
-## Features:
+## Features
 
 - Schedule any command from your app as a server-side job, either programmatically or through a browser interface.
 - Run jobs right away, postpone them or make them recurring.
@@ -29,13 +30,13 @@
 - Add related entity and parent job.
 - Capture and store specific output from commands in the job's output parameters.
 
-## Installation:
+## Installation
 
 ```
 composer require tomatom/jobqueuebundle
 ```
 
-## Configuration:
+## Configuration
 
 #### config/bundles.php:
 
@@ -164,7 +165,7 @@ For recurring messages you also need the scheduler running so the jobs are creat
 php bin/console messenger:consume scheduler_job_recurring
 ```
 
-## Usage:
+## Usage
 
 #### Types of ways jobs can be run
 
@@ -352,7 +353,18 @@ translations/messages.{locale}.yaml:
 
 (Currently there are only translations for *en* and *cs* locales)
 
-## Dependencies:
+## Testing
+
+The bundle has ready tests for job creations in the tests/ folder.
+Running tests in your app can be done like this:
+
+```bash
+vendor/bin/phpunit vendor/tomatom/jobqueuebundle/tests/
+```
+
+The tests are also run on every push / pull request on GitHub.
+
+## Dependencies
 
 * "php": ">=8.1",
 * "doctrine/doctrine-bundle": "^2",
@@ -360,21 +372,27 @@ translations/messages.{locale}.yaml:
 * "dragonmantank/cron-expression": "^3",
 * "knplabs/knp-paginator-bundle": "^6",
 * "spiriitlabs/form-filter-bundle": "^11",
-* "symfony/form": "^6.4",
-* "symfony/framework-bundle": "^6.4",
-* "symfony/lock": "^6.4",
-* "symfony/messenger": "^6.4",
-* "symfony/process": "^6.4",
-* "symfony/scheduler": "^6.4",
-* "symfony/security-bundle": "^6.4",
-* "symfony/translation": "^6.4",
+* "symfony/form": "6.4 || ^7.2",
+* "symfony/framework-bundle": "6.4 || ^7.2",
+* "symfony/lock": "6.4 || ^7.2",
+* "symfony/messenger": "6.4 || ^7.2",
+* "symfony/process": "6.4 || ^7.2",
+* "symfony/scheduler": "6.4 || ^7.2",
+* "symfony/security-bundle": "6.4 || ^7.2",
+* "symfony/translation": "6.4 || ^7.2",
 * "twig/twig": "^2|^3"
 
-## TODO:
+## TODO
 
-Add tests<br>
 [Handle getting changes of recurring jobs in better way](/../../issues/3)
 
-## Contributing:
+## Additional info / Contributing
+
+Special thanks to [schmittjoh](https://github.com/schmittjoh) for the
+original [JMSJobQueueBundle](https://github.com/schmittjoh/JMSJobQueueBundle).
+
+This bundle **is not a fork, nor is building on top of the original bundle**, it's our own take on the console
+command scheduling, so please bear that in mind when using it. However, going from the original to this bundle should be
+seamless.
 
 Feel free to open any issues or pull requests if you find something wrong or missing what you'd like the bundle to have!
