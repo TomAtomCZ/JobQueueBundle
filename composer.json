@@ -30,7 +30,7 @@
     "doctrine/orm": "^2|^3",
     "dragonmantank/cron-expression": "^3",
     "knplabs/knp-paginator-bundle": "^6",
-    "spiriitlabs/form-filter-bundle": "^11",
+    "spiriitlabs/form-filter-bundle": "^11|^10",
     "symfony/form": "^6.4 || ^7.2",
     "symfony/framework-bundle": "^6.4 || ^7.2",
     "symfony/lock": "^6.4 || ^7.2",
