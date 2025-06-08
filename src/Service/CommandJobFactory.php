@@ -43,7 +43,7 @@ class CommandJobFactory
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function createCommandJob(string $commandName, array $commandParams, int $entityId = null, string $entityClassName = null, Job $parentJob = null, JobRecurring $parentJobRecurring = null, ?DateTimeImmutable $postponedStartAt = null): Job
+    public function createCommandJob(string $commandName, array $commandParams, ?int $entityId = null, ?string $entityClassName = null, ?Job $parentJob = null, ?JobRecurring $parentJobRecurring = null, ?DateTimeImmutable $postponedStartAt = null): Job
     {
         // Check if user is loaded and is granted job creation
         if ($this->security->getUser() && !$this->security->isGranted(JobQueuePermissions::ROLE_JOB_CREATE)) {
