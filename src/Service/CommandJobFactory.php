@@ -10,6 +10,7 @@ use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\Exception\ExceptionInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\DelayStamp;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -31,22 +32,29 @@ class CommandJobFactory
     }
 
     /**
-     * @param string $commandName - Command name
-     * @param array $commandParams - Command params
-     * @param int|null $entityId - Entity ID
-     * @param string|null $entityClassName - Entity class name
-     * @param Job|null $parentJob - Parent Job entity
-     * @param JobRecurring|null $parentJobRecurring - Recurring job from which was created
-     * @param DateTimeImmutable|null $postponedStartAt - Postponed job start time
+     * @param string $commandName Command name
+     * @param array $commandParams Command params
+     * @param int|null $entityId Entity ID
+     * @param string|null $entityClassName Entity class name
+     * @param Job|null $parentJob Parent Job entity
+     * @param JobRecurring|null $parentJobRecurring Recurring job from which was created
+     * @param DateTimeImmutable|null $postponedStartAt Postponed job start time
+     * @param bool $checkUserRole Check if user has a role with granted job creation
      * @return Job
      * @throws CommandJobException
-     * @throws ORMException
-     * @throws OptimisticLockException
+     * @throws ExceptionInterface
      */
-    public function createCommandJob(string $commandName, array $commandParams, ?int $entityId = null, ?string $entityClassName = null, ?Job $parentJob = null, ?JobRecurring $parentJobRecurring = null, ?DateTimeImmutable $postponedStartAt = null): Job
+    public function createCommandJob(string             $commandName,
+                                     array              $commandParams,
+                                     ?int               $entityId = null,
+                                     ?string            $entityClassName = null,
+                                     ?Job               $parentJob = null,
+                                     ?JobRecurring      $parentJobRecurring = null,
+                                     ?DateTimeImmutable $postponedStartAt = null,
+                                     ?bool              $checkUserRole = true): Job
     {
         // Check if user is loaded and is granted job creation
-        if ($this->security->getUser() && !$this->security->isGranted(JobQueuePermissions::ROLE_JOB_CREATE)) {
+        if ($checkUserRole && $this->security->getUser() && !$this->security->isGranted(JobQueuePermissions::ROLE_JOB_CREATE)) {
             throw new CommandJobException($this->translator->trans('job.creation.error_security'));
         }
 

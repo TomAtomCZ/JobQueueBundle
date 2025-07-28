@@ -194,6 +194,7 @@ The function __createCommandJob__ from __CommandJobFactory__ accepts:
 * job entity for parent job (optional)
 * entity of recurring parent job (optional)
 * datetime of postponed job start (optional)
+* check user role (optional)
 
 and returns the created job.
 
@@ -372,19 +373,20 @@ The tests are also run on every push / pull request on GitHub.
 * "dragonmantank/cron-expression": "^3",
 * "knplabs/knp-paginator-bundle": "^6",
 * "spiriitlabs/form-filter-bundle": "^11",
-* "symfony/form": "6.4 || ^7.2",
-* "symfony/framework-bundle": "6.4 || ^7.2",
-* "symfony/lock": "6.4 || ^7.2",
-* "symfony/messenger": "6.4 || ^7.2",
-* "symfony/process": "6.4 || ^7.2",
-* "symfony/scheduler": "6.4 || ^7.2",
-* "symfony/security-bundle": "6.4 || ^7.2",
-* "symfony/translation": "6.4 || ^7.2",
+* "symfony/form": "^6.4 || ^7.2",
+* "symfony/framework-bundle": "^6.4 || ^7.2",
+* "symfony/lock": "^6.4 || ^7.2",
+* "symfony/messenger": "^6.4 || ^7.2",
+* "symfony/process": "^6.4 || ^7.2",
+* "symfony/scheduler": "^6.4 || ^7.2",
+* "symfony/security-bundle": "^6.4 || ^7.2",
+* "symfony/translation": "^6.4 || ^7.2",
 * "twig/twig": "^2|^3"
 
 ## TODO
 
-[Handle getting changes of recurring jobs in better way](/../../issues/3)
+- [Handle getting changes of recurring jobs in better way](/../../issues/3)
+- Handle jobs output better (key:value)
 
 ## Additional info / Contributing
 
