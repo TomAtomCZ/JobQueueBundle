@@ -18,6 +18,9 @@ use TomAtom\JobQueueBundle\Message\JobRecurringMessage;
 #[AsSchedule(JobRecurring::SCHEDULER_NAME)]
 final class JobRecurringSchedule implements ScheduleProviderInterface
 {
+
+    private ?Schedule $schedule = null;
+
     public function __construct(
         private readonly EventDispatcherInterface $dispatcher,
         private readonly LockFactory              $lockFactory,
