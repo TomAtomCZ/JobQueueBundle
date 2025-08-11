@@ -7,11 +7,15 @@
         <div class="col-8 my-2">
             <h1>
                 {{ 'job.detail.title'|trans }} {{ job.id }}
-                {% if relatedEntityName is not empty %}
-                    {{ 'job.header.for'|trans }} <strong>{{ relatedEntityName }}</strong>
-                {% endif %}
-                {% if relatedEntityId is not empty %}
-                    {{ 'job.header.for_entity_with_id'|trans ~ ' ' ~ relatedEntityId }}
+                {% if relatedEntity is not empty and relatedEntity.__toString is defined %}
+                    {{ 'job.header.for'|trans }} <strong>{{ relatedEntity }}</strong>
+                {% else %}
+                    {% if relatedEntityName is not empty %}
+                        {{ 'job.header.entity'|trans }} <strong>{{ relatedEntityName }}</strong>
+                    {% endif %}
+                    {% if relatedEntityId is not empty %}
+                        {{ 'job.header.entity_with_id'|trans ~ ' ' ~ relatedEntityId }}
+                    {% endif %}
                 {% endif %}
             </h1>
         </div>

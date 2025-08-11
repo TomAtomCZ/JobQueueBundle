@@ -27,7 +27,8 @@ job:
     filter: "Filter"
     reset: "Reset"
   header:
-    for_entity_with_id: "with ID"
+    entity_with_id: "with ID"
+    entity: "entity"
     for: "for"
   command: "Command"
   command_params: "Parameters"
