@@ -10,13 +10,13 @@ use Symfony\Component\Scheduler\Event\PreRunEvent;
 use Symfony\Component\Scheduler\RecurringMessage;
 use TomAtom\JobQueueBundle\Entity\JobRecurring;
 use TomAtom\JobQueueBundle\Message\JobRecurringMessage;
+use TomAtom\JobQueueBundle\Scheduler\JobRecurringSchedule;
 
 class JobRecurringScheduleListener implements EventSubscriberInterface
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly LockFactory            $lockFactory,
-
     )
     {
     }
@@ -38,8 +38,17 @@ class JobRecurringScheduleListener implements EventSubscriberInterface
             return;
         }
 
-        // Access the running schedule
         $currentSchedule = $event->getSchedule();
+        if (!$currentSchedule instanceof JobRecurringSchedule) {
+            // Not our schedule, ignore
+            return;
+        }
+
+        $currentMessage = $event->getMessage();
+        if (!$currentMessage instanceof JobRecurringMessage || $currentMessage->getCommandName() !== JobRecurring::HEARTBEAT_MESSAGE) {
+            // Not the heartbeat message, ignore
+            return;
+        }
 
         // Clear existing recurring messages
         foreach ($currentSchedule->getSchedule()->getRecurringMessages() as $key => $recurringMessage) {
