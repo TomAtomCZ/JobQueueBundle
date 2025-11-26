@@ -2,25 +2,19 @@
 
 namespace TomAtom\JobQueueBundle\EventListener;
 
-use Doctrine\Common\EventSubscriber;
+use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\Event\LoadClassMetadataEventArgs;
 use TomAtom\JobQueueBundle\Entity\Job;
 use TomAtom\JobQueueBundle\Entity\JobRecurring;
 
-class OverrideMappingListener implements EventSubscriber
+#[AsDoctrineListener(event: 'loadClassMetadata')]
+class OverrideMappingListener
 {
-    private string $jobTableName;
-    private string $jobRecurringTableName;
-
-    public function __construct(string $jobTableName, string $jobRecurringTableName)
+    public function __construct(
+        private readonly string $jobTableName,
+        private readonly string $jobRecurringTableName
+    )
     {
-        $this->jobTableName = $jobTableName;
-        $this->jobRecurringTableName = $jobRecurringTableName;
-    }
-
-    public function getSubscribedEvents(): array
-    {
-        return ['loadClassMetadata'];
     }
 
     public function loadClassMetadata(LoadClassMetadataEventArgs $args): void
