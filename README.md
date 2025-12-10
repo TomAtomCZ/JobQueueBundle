@@ -373,14 +373,14 @@ The tests are also run on every push / pull request on GitHub.
 * "dragonmantank/cron-expression": "^3",
 * "knplabs/knp-paginator-bundle": "^6",
 * "spiriitlabs/form-filter-bundle": "^11",
-* "symfony/form": "^6.4 || ^7.3",
-* "symfony/framework-bundle": "^6.4 || ^7.3",
-* "symfony/lock": "^6.4 || ^7.3",
-* "symfony/messenger": "^6.4 || ^7.3",
-* "symfony/process": "^6.4 || ^7.3",
-* "symfony/scheduler": "^6.4 || ^7.3",
-* "symfony/security-bundle": "^6.4 || ^7.3",
-* "symfony/translation": "^6.4 || ^7.3",
+* "symfony/form": "^6.4 || ^7.4",
+* "symfony/framework-bundle": "^6.4 || ^7.4",
+* "symfony/lock": "^6.4 || ^7.4",
+* "symfony/messenger": "^6.4 || ^7.4",
+* "symfony/process": "^6.4 || ^7.4",
+* "symfony/scheduler": "^6.4 || ^7.4",
+* "symfony/security-bundle": "^6.4 || ^7.4",
+* "symfony/translation": "^6.4 || ^7.4",
 * "twig/twig": "^2|^3"
 
 ## TODO
