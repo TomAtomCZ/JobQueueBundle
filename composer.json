@@ -53,8 +53,7 @@
   },
   "extra": {
     "symfony": {
-      "allow-contrib": true,
-      "require": "6.4.*"
+      "allow-contrib": true
     },
     "public-dir": "public"
   },
