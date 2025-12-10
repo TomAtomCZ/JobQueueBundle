@@ -8,9 +8,11 @@ use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\Messenger\Exception\ExceptionInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -39,6 +41,9 @@ class CommandController extends AbstractController
         ]);
     }
 
+    /**
+     * @throws ExceptionInterface
+     */
     #[Route(path: '/schedule-init', name: 'command_schedule_init')]
     public function scheduleInit(Request $request, CommandJobFactory $commandJobFactory, TranslatorInterface $translator): Response
     {
@@ -48,7 +53,7 @@ class CommandController extends AbstractController
         $commandName = $commandScheduleRequest['command'] ?? null;
         $runMethod = $commandScheduleRequest['method'] ?? null;
         if (empty($commandName) || empty($runMethod)) {
-            // Redirect back to the command schedule if somehow missing some of required values
+            // Redirect back to the command schedule if somehow missing some of the required values
             $this->addFlash('danger', $translator->trans('command.schedule.job.error.name'));
             return $this->redirectToRoute('command_schedule', ['listId' => $listId, 'listName' => $listName]);
         }
@@ -143,28 +148,37 @@ class CommandController extends AbstractController
     private function getApplicationCommands(KernelInterface $kernel): array
     {
         $application = new Application($kernel);
-        $commands = [];
+        $commandCategories = [];
         foreach ($application->all() as $command) {
             if (str_starts_with($command->getName(), '_')) {
-                // Unset internal commands
+                // Skip internal commands
                 continue;
             }
+
             if (str_contains($command->getName(), ':')) {
-                // Make command groups by first command part (app:|make: etc.)
-                $key = explode(':', $command->getName())[0];
-                $commands[$key][] = $command;
+                // Add command in categories by the first command part (app:|make: etc.)
+                $categoryKey = explode(':', $command->getName())[0];
+                $commandCategories[$categoryKey][] = $command;
             } else {
-                $commands['uncategorized'][] = $command;
+                $commandCategories['uncategorized'][] = $command;
             }
         }
 
         // Ensure uncategorized commands are last
-        uksort($commands, function ($a, $b) {
+        uksort($commandCategories, function (string $a, string $b) {
             if ($a === 'uncategorized') return 1;
             if ($b === 'uncategorized') return -1;
             return $a <=> $b;
         });
 
-        return $commands;
+        // Sort commands by name in individual categories
+        foreach ($commandCategories as $category => $commands) {
+            usort($commands, function (Command $a, Command $b) {
+                return $a->getName() <=> $b->getName();
+            });
+            $commandCategories[$category] = $commands;
+        }
+
+        return $commandCategories;
     }
 }
