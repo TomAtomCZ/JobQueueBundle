@@ -7,10 +7,14 @@
         <defaults autowire="true" autoconfigure="true">
             <bind key="$jobTableName">%job_queue.database.job_table_name%</bind>
             <bind key="$jobRecurringTableName">%job_queue.database.job_recurring_table_name%</bind>
+            <bind key="$pollIntervalMs">%job_queue.processing.poll_interval_ms%</bind>
+            <bind key="$outputMaxBytes">%job_queue.processing.output_max_bytes%</bind>
+            <bind key="$dbFailureTolerance">%job_queue.processing.db_failure_tolerance%</bind>
+            <bind key="$rerunOnRedelivery">%job_queue.processing.rerun_on_redelivery%</bind>
         </defaults>
 
         <prototype namespace="TomAtom\JobQueueBundle\" resource="../src/*"
-                   exclude="../src/{DependencyInjection,Entity,Tests,Kernel.php}"/>
+                   exclude="../src/{DependencyInjection,Entity,Output,Tests,Kernel.php}"/>
 
         <service id="tomatom.job_queue.override_mapping_listener"
                  class="TomAtom\JobQueueBundle\EventListener\OverrideMappingListener"

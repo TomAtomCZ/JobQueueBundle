@@ -23,6 +23,7 @@ use TomAtom\JobQueueBundle\Exception\CommandJobException;
 use TomAtom\JobQueueBundle\Form\JobFilterType;
 use TomAtom\JobQueueBundle\Security\JobQueuePermissions;
 use TomAtom\JobQueueBundle\Service\CommandJobFactory;
+use TomAtom\JobQueueBundle\Service\JobOutputWriter;
 
 #[Route(path: '/job')]
 class JobController extends AbstractController
@@ -215,7 +216,7 @@ class JobController extends AbstractController
 
     #[IsGranted(JobQueuePermissions::ROLE_JOB_CANCEL)]
     #[Route(path: '/cancel/{id<\d+>}', name: 'job_queue_cancel')]
-    public function cancel(?Job $job, Request $request): Response
+    public function cancel(?Job $job, Request $request, JobOutputWriter $writer): Response
     {
         if (empty($job)) {
             $this->addFlash('warning', $this->translator->trans('job.detail.error.not_found'));
@@ -225,17 +226,16 @@ class JobController extends AbstractController
             ]);
         }
 
-        if ($job->isCancellable()) {
-            // Try to cancel job if job is running
-            try {
-                $job->setCancelledAt(new DateTimeImmutable());
-                $this->entityManager->flush();
+        // Cancel the job only if it is (still) running - a conditional update, so a result the handler stored after
+        // the job was loaded here is never overwritten by the cancellation
+        try {
+            if ($job->isCancellable() && $writer->cancel($job->getId(), new DateTimeImmutable())) {
                 $this->addFlash('success', $this->translator->trans('job.cancellation.success'));
-            } catch (Exception $e) {
-                $this->addFlash('danger', $this->translator->trans('job.cancellation.error') . $e->getMessage());
+            } else {
+                $this->addFlash('warning', $this->translator->trans('job.cancellation.not_cancellable'));
             }
-        } else {
-            $this->addFlash('warning', $this->translator->trans('job.cancellation.not_cancellable'));
+        } catch (Exception $e) {
+            $this->addFlash('danger', $this->translator->trans('job.cancellation.error') . $e->getMessage());
         }
 
         return $this->redirectToRoute('job_queue_detail', [
