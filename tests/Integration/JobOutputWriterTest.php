@@ -53,6 +53,65 @@ class JobOutputWriterTest extends DatabaseTestCase
         self::assertNull($this->writer->readStatus($id + 100));
     }
 
+    public function testRerunClaimAppendsItsNote(): void
+    {
+        $id = $this->createJob('test:lines', [], Job::STATUS_RUNNING, 'old');
+        $startedAt = new DateTimeImmutable();
+
+        self::assertTrue($this->writer->markRunning($id, $startedAt, [Job::STATUS_PLANNED, Job::STATUS_RUNNING], "\nrerun"));
+
+        self::assertSame("old\nrerun", $this->fetchJob($id)['output']);
+        self::assertSame(
+            ['status' => Job::STATUS_RUNNING, 'startedAt' => $this->writer->formatDateTime($startedAt)],
+            $this->writer->readClaim($id)
+        );
+        self::assertNull($this->writer->readClaim($id + 100));
+    }
+
+    public function testCancelOnlyCancelsARunningJob(): void
+    {
+        $running = $this->createJob('test:lines', [], Job::STATUS_RUNNING);
+        $completed = $this->createJob('test:lines', [], Job::STATUS_COMPLETED);
+
+        self::assertTrue($this->writer->cancel($running, new DateTimeImmutable()));
+        self::assertFalse($this->writer->cancel($completed, new DateTimeImmutable()));
+
+        self::assertSame(Job::STATUS_CANCELLED, $this->fetchJob($running)['status']);
+        self::assertNotNull($this->fetchJob($running)['cancelled_at']);
+        self::assertSame(Job::STATUS_COMPLETED, $this->fetchJob($completed)['status']);
+        self::assertNull($this->fetchJob($completed)['cancelled_at']);
+    }
+
+    public function testFinalizeSkipsAppendBeyondCapButStoresResult(): void
+    {
+        $id = $this->createJob('test:lines', [], Job::STATUS_RUNNING, str_repeat('x', 20));
+
+        $this->writer->finalize($id, Job::STATUS_FAILED, new DateTimeImmutable(), null, null, "\nmessage", 10);
+
+        $row = $this->fetchJob($id);
+        self::assertSame(Job::STATUS_FAILED, $row['status']);
+        self::assertSame(str_repeat('x', 20), $row['output']);
+        self::assertNotNull($row['closed_at']);
+    }
+
+    public function testFailureKeepsCallerTransaction(): void
+    {
+        $id = $this->createJob('test:lines');
+        $this->writer->setCallerNestingLevel(1);
+        $this->faults->failWhen(static fn(string $sql) => str_starts_with($sql, 'UPDATE'), 1153);
+
+        $this->connection->beginTransaction();
+        try {
+            $this->writer->append($id, 'x');
+            self::fail('exception expected');
+        } catch (\Doctrine\DBAL\Exception) {
+        }
+        $this->faults->disable();
+
+        self::assertSame(1, $this->connection->getTransactionNestingLevel());
+        $this->connection->rollBack();
+    }
+
     public function testFinalizeStoresResult(): void
     {
         $id = $this->createJob('test:lines', [], Job::STATUS_RUNNING, 'out');

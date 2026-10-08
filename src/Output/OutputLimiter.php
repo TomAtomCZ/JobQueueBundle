@@ -6,6 +6,8 @@ namespace TomAtom\JobQueueBundle\Output;
  * Caps the amount of command output stored for one job.
  *
  * Output beyond the cap is dropped (the head of the output is kept) and a truncation marker is emitted exactly once.
+ * The cut never splits a UTF-8 character (a broken character cannot be stored in a utf8mb4 column of a strict MySQL),
+ * so the stored head may be up to 3 bytes shorter than the cap.
  */
 final class OutputLimiter
 {
@@ -35,7 +37,7 @@ final class OutputLimiter
         }
 
         $this->truncated = true;
-        $room = max(0, $this->maxBytes - $this->usedBytes);
+        $room = Utf8Stream::boundary($chunk, $this->maxBytes - $this->usedBytes);
         $head = substr($chunk, 0, $room);
         $this->usedBytes += $room;
 

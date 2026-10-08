@@ -78,17 +78,26 @@ Recommendations for the transport of the job messages:
 
 - **Disable retries** - `retry_strategy: { max_retries: 0 }`. A retry of a job message means running the command
   again. The handler itself never throws because a command failed (a failed command is stored as a `failed` job), the
-  only exception it throws is an `UnrecoverableMessageHandlingException` when the job result cannot be stored.
+  only exception it throws once the command has started is an `UnrecoverableMessageHandlingException` when the job
+  result cannot be stored. A database error before the command starts (loading or claiming the job) is retried by the
+  handler a few times and then thrown as a `RecoverableMessageHandlingException`, which Messenger retries even with
+  `max_retries: 0` - nothing has run yet, so the job is not lost. A message of a job which does not exist (also after a
+  short wait for the creating transaction) is rejected without retry.
 - **Long jobs and several consumers** - the stock Doctrine transport redelivers a message which is not acknowledged
   within `redeliver_timeout` (default 3600 s). For jobs running longer than that, run the consumer with `--keepalive`
   (Symfony >= 7.2, `messenger:consume job_message --keepalive`) or raise `redeliver_timeout`. A redelivered message of
   a job which is already `running` does not run the command again (see `rerun_on_redelivery` below).
+  **Without `--keepalive`, a job running longer than `redeliver_timeout` is redelivered to another consumer while the
+  first one still runs it.** The handler cannot tell this from a dead worker: the job is marked `failed` with
+  "previous worker died" (the first worker later overwrites the status with its result, the message stays in the
+  output), and with `rerun_on_redelivery: true` the command runs twice at the same time.
 - **Own DBAL connection (optional)** - the handler keeps no transaction open while the command runs, so sharing the
   default connection is fine. If you want to be completely sure the handler's connection state never meets the
   transport's send/reject, use a separate connection to the same database, e.g. `dsn: "doctrine://jobs"` with a
   `doctrine.dbal.connections.jobs` entry.
 - Do not wrap the job handler in the `doctrine_transaction` middleware - the job state must be visible (and the
-  cancellation readable) while the command runs.
+  cancellation readable) while the command runs. (A transaction opened by the caller is not rolled back by the
+  handler's connection resets, but with a lost connection it is gone anyway.)
 
 ```yaml
 framework:
@@ -186,11 +195,24 @@ How a job is processed:
   After `db_failure_tolerance` consecutive failed polls the command is stopped and the job is marked `failed`.
 - Output above `output_max_bytes` is dropped and a `[... output truncated by JobQueueBundle at N bytes ...]` marker is
   appended once. **Keep `output_max_bytes` well below MySQL `max_allowed_packet`** (64 MB by default on MySQL 8) -
-  the `output` column is a LONGTEXT and a larger value cannot be written or read in one packet.
+  the `output` column is a LONGTEXT and a larger value cannot be written or read in one packet. With
+  `output_max_bytes: 0` nothing guards the column size, not even the final status message.
+- The stored output is always valid UTF-8 (a strict MySQL rejects anything else in a `utf8mb4` column): a character
+  split between two reads is completed first, the cap never cuts a character, and bytes which are not UTF-8 (binary
+  output, another encoding) are replaced by `?`.
+- Output which the database rejects although the connection works (e.g. a value or packet size error) is replaced by
+  a `[JobQueueBundle: N bytes of output could not be stored: ...]` note - it never fails a healthy command or blocks
+  storing the job result.
+- A job deleted while its command runs stops the command (like a cancellation); nothing is recorded.
 - When a message is redelivered for a job which is already `running` (the previous worker died), the job is marked
   `failed` with an explanation instead of running the command again. Set `rerun_on_redelivery: true` to run it again.
   Messages of `completed`, `failed` or `cancelled` jobs are ignored, a message of a deleted job is rejected without
   retry.
+
+**Upgrading from 2.1 with a job stuck in `running`** (redelivered over and over because its output grew close to
+`max_allowed_packet`): truncate its output before deploying, e.g.
+`UPDATE job_queue SET output = LEFT(output, 1048576) WHERE id = <id>`. Its next redelivery marks it `failed`; the
+status message is only appended while the output is below the cap, and later output chunks of such a job are dropped.
 
 #### Update your database so the job tables are created
 

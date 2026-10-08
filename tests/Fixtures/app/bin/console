@@ -51,16 +51,39 @@ switch ($command) {
         exit(0);
 
     case 'test:cancel-self':
-        // Cancels its own job through a separate database connection, then keeps running
+        // Cancels (--action=delete: deletes) its own job through a separate database connection, then keeps running
         echo "started\n";
         usleep(300000);
         $pdo = new PDO('sqlite:' . $opt('db'));
         $pdo->setAttribute(PDO::ATTR_TIMEOUT, 10);
-        $pdo->exec(sprintf("UPDATE job_queue SET status = 'cancelled', cancelled_at = '%s' WHERE id = %d", date('Y-m-d H:i:s'), (int)$opt('id')));
-        echo "cancelled myself\n";
+        if ($opt('action') === 'delete') {
+            $pdo->exec(sprintf('DELETE FROM job_queue WHERE id = %d', (int)$opt('id')));
+            echo "deleted myself\n";
+        } else {
+            $pdo->exec(sprintf("UPDATE job_queue SET status = 'cancelled', cancelled_at = '%s' WHERE id = %d", date('Y-m-d H:i:s'), (int)$opt('id')));
+            echo "cancelled myself\n";
+        }
         for ($i = 0; $i < 100; $i++) {
             echo "still running $i\n";
             usleep(100000);
+        }
+        exit(0);
+
+    case 'test:utf8':
+        // Prints --count two-byte characters (\u{17E} = 0xC5 0xBE), every character split between two writes
+        for ($i = 0; $i < (int)$opt('count', 10); $i++) {
+            echo "\xC5";
+            flush();
+            usleep((int)$opt('sleep', 0));
+            echo "\xBE";
+        }
+        exit(0);
+
+    case 'test:echo':
+        // Prints --lines (colon separated - commas split job params) one per --sleep microseconds
+        foreach (explode(':', (string)$opt('lines', '')) as $line) {
+            echo $line, "\n";
+            usleep((int)$opt('sleep', 100000));
         }
         exit(0);
 

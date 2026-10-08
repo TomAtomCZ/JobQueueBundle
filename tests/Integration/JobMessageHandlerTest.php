@@ -17,6 +17,8 @@ use TomAtom\JobQueueBundle\Tests\Support\FaultInjector;
 class JobMessageHandlerTest extends DatabaseTestCase
 {
     private const OUTPUT_UPDATE = '/^UPDATE job_queue SET output = /';
+    /** MySQL ER_NET_PACKET_TOO_LARGE - a driver error which is not a lost connection */
+    private const PACKET_TOO_BIG_CODE = 1153;
 
     private function handler(
         int  $pollIntervalMs = 200,
@@ -86,9 +88,10 @@ class JobMessageHandlerTest extends DatabaseTestCase
     }
 
     /**
-     * Regression of TT-SERVER-CQ: the connection drops in the middle of the loop and pdo keeps believing in a
-     * transaction. The job must survive and the connection must accept a new transaction afterwards
-     * (the worker's retry/reject send runs on it).
+     * A lost connection in the middle of the loop: the buffered output is written after the reconnect.
+     *
+     * Not the regression guard of TT-SERVER-CQ on its own - DBAL itself closes the connection on ConnectionLost,
+     * see testDriverErrorWithStaleTransactionMidLoop.
      */
     public function testConnectionLostMidLoop(): void
     {
@@ -112,6 +115,92 @@ class JobMessageHandlerTest extends DatabaseTestCase
             self::assertStringContainsString("line $i\n", $row['output'], 'buffered output was lost');
         }
         self::assertGreaterThanOrEqual(1, $this->queries->count('Disconnecting'));
+        $this->assertConnectionUsable();
+    }
+
+    /**
+     * Regression of TT-SERVER-CQ: a statement fails with a driver error which is not a lost connection (DBAL does not
+     * close the connection then) while pdo believes in a transaction DBAL does not know about. Only the bundle's
+     * reset saves the connection - otherwise the next beginTransaction() (the worker's retry/reject send) fails with
+     * "There is already an active transaction".
+     */
+    public function testDriverErrorWithStaleTransactionMidLoop(): void
+    {
+        $id = $this->createJob('test:lines', ['--count=12', '--sleep=100000']);
+        $outputWrites = 0;
+        $this->faults->failWhen(
+            static function (string $sql) use (&$outputWrites): bool {
+                return preg_match(self::OUTPUT_UPDATE, $sql) && ++$outputWrites === 2;
+            },
+            self::PACKET_TOO_BIG_CODE,
+            true
+        );
+
+        ($this->handler())(new JobMessage($id));
+        $this->faults->disable();
+
+        self::assertSame(1, $this->faults->injected);
+        $row = $this->fetchJob($id);
+        self::assertSame(Job::STATUS_COMPLETED, $row['status']);
+        for ($i = 1; $i <= 12; $i++) {
+            self::assertStringContainsString("line $i\n", $row['output'], 'buffered output was lost');
+        }
+        $this->assertConnectionUsable();
+    }
+
+    /**
+     * Regression of TT-SERVER-CQ for the result write (see testDriverErrorWithStaleTransactionMidLoop).
+     */
+    public function testFinalizeDriverErrorWithStaleTransactionIsRetried(): void
+    {
+        $id = $this->createJob('test:lines', ['--count=2', '--sleep=10000']);
+        $finalizeWrites = 0;
+        $this->faults->failWhen(
+            static function (string $sql) use (&$finalizeWrites): bool {
+                return preg_match('/^UPDATE job_queue SET .*closed_at/', $sql) && ++$finalizeWrites === 1;
+            },
+            self::PACKET_TOO_BIG_CODE,
+            true
+        );
+
+        ($this->handler())(new JobMessage($id));
+        $this->faults->disable();
+
+        self::assertSame(1, $this->faults->injected);
+        $row = $this->fetchJob($id);
+        self::assertSame(Job::STATUS_COMPLETED, $row['status']);
+        self::assertSame("line 1\nline 2\n", $row['output']);
+        self::assertNotNull($row['closed_at']);
+        $this->assertConnectionUsable();
+    }
+
+    public function testCallerTransactionSurvivesAFailedWrite(): void
+    {
+        $id = $this->createJob('test:lines', ['--count=8', '--sleep=100000']);
+        $outputWrites = 0;
+        $this->faults->failWhen(
+            static function (string $sql) use (&$outputWrites): bool {
+                return preg_match(self::OUTPUT_UPDATE, $sql) && ++$outputWrites === 2;
+            },
+            self::PACKET_TOO_BIG_CODE
+        );
+
+        $this->connection->beginTransaction();
+        try {
+            ($this->handler())(new JobMessage($id));
+            $this->faults->disable();
+
+            self::assertSame(1, $this->faults->injected);
+            self::assertTrue($this->connection->isTransactionActive(), 'the caller transaction was rolled back');
+            self::assertSame(1, $this->connection->getTransactionNestingLevel());
+        } finally {
+            $this->faults->disable();
+            if ($this->connection->isTransactionActive()) {
+                $this->connection->commit();
+            }
+        }
+
+        self::assertSame(Job::STATUS_COMPLETED, $this->fetchJob($id)['status']);
         $this->assertConnectionUsable();
     }
 
@@ -249,6 +338,125 @@ class JobMessageHandlerTest extends DatabaseTestCase
         self::assertSame(str_repeat('x', $cap), substr($row['output'], 0, $cap));
     }
 
+    public function testMultiByteCharactersSplitBetweenReadsAreStoredIntact(): void
+    {
+        $id = $this->createJob('test:utf8', ['--count=20', '--sleep=20000']);
+
+        ($this->handler(pollIntervalMs: 50))(new JobMessage($id));
+
+        $row = $this->fetchJob($id);
+        self::assertSame(Job::STATUS_COMPLETED, $row['status']);
+        self::assertSame(str_repeat("\u{17E}", 20), $row['output']);
+        // Every single write must be valid UTF-8 (a strict MySQL rejects a broken character in a utf8mb4 column)
+        self::assertTrue(mb_check_encoding($row['output'], 'UTF-8'));
+    }
+
+    public function testOutputCapNeverSplitsMultiByteCharacter(): void
+    {
+        $cap = 11;
+        $id = $this->createJob('test:utf8', ['--count=50']);
+
+        ($this->handler(outputMaxBytes: $cap))(new JobMessage($id));
+
+        $row = $this->fetchJob($id);
+        self::assertSame(Job::STATUS_COMPLETED, $row['status']);
+        self::assertSame(str_repeat("\u{17E}", 5) . OutputLimiter::marker($cap), $row['output']);
+    }
+
+    public function testOutputChunkRejectedByTheDatabaseDoesNotKillTheCommand(): void
+    {
+        $this->rejectOutputContaining('POISON');
+        $id = $this->createJob('test:echo', ['--lines=one:POISON:two:three:four:five:six', '--sleep=150000']);
+
+        ($this->handler(pollIntervalMs: 100, dbFailureTolerance: 3))(new JobMessage($id));
+
+        $row = $this->fetchJob($id);
+        self::assertSame(Job::STATUS_COMPLETED, $row['status']);
+        self::assertStringContainsString('could not be stored', $row['output']);
+        self::assertStringContainsString("six\n", $row['output']);
+        self::assertStringNotContainsString('POISON', $row['output']);
+        $this->assertConnectionUsable();
+    }
+
+    public function testRejectedRemainingOutputDoesNotBlockTheResult(): void
+    {
+        $this->rejectOutputContaining('POISON');
+        $id = $this->createJob('test:echo', ['--lines=one:POISON', '--sleep=0']);
+
+        ($this->handler(pollIntervalMs: 5000))(new JobMessage($id));
+
+        $row = $this->fetchJob($id);
+        self::assertSame(Job::STATUS_COMPLETED, $row['status']);
+        self::assertStringContainsString('could not be stored', $row['output']);
+        self::assertNotNull($row['closed_at']);
+        $this->assertConnectionUsable();
+    }
+
+    public function testJobDeletedWhileRunningStopsTheCommand(): void
+    {
+        $id = $this->createJob('test:cancel-self');
+        $this->entityManager->getConnection()->executeStatement(
+            'UPDATE job_queue SET command_params = ? WHERE id = ?',
+            [sprintf('--db=%s,--id=%d,--action=delete', $this->databaseFile, $id), $id]
+        );
+
+        $start = microtime(true);
+        ($this->handler())(new JobMessage($id));
+
+        self::assertLessThan(3.0, microtime(true) - $start, 'the command of the deleted job was not stopped');
+        self::assertFalse($this->connection->fetchOne('SELECT id FROM job_queue WHERE id = ?', [$id]));
+        $this->assertConnectionUsable();
+    }
+
+    public function testJobClaimedByAnotherWorkerIsNotRun(): void
+    {
+        $marker = $this->databaseFile . '.ran';
+        $id = $this->createJob('test:touch', ['--file=' . $marker]);
+        $databaseFile = $this->databaseFile;
+        $flipped = false;
+        // Another worker wins the claim between the status read and the claim UPDATE
+        $this->faults->failWhen(static function (string $sql) use (&$flipped, $databaseFile, $id): bool {
+            if (!$flipped && preg_match('/^UPDATE job_queue SET status = \?, started_at = \?/', $sql)) {
+                $flipped = true;
+                (new \PDO('sqlite:' . $databaseFile))->exec(sprintf("UPDATE job_queue SET status = 'running' WHERE id = %d", $id));
+            }
+
+            return false;
+        });
+
+        try {
+            ($this->handler())(new JobMessage($id));
+
+            self::assertTrue($flipped);
+            self::assertFileDoesNotExist($marker);
+            $row = $this->fetchJob($id);
+            self::assertSame(Job::STATUS_RUNNING, $row['status']);
+            self::assertNull($row['closed_at']);
+        } finally {
+            @unlink($marker);
+        }
+    }
+
+    public function testTransientErrorsBeforeTheClaimAreRetried(): void
+    {
+        $id = $this->createJob('test:lines', ['--count=1', '--sleep=1000']);
+        $loads = 0;
+        $claims = 0;
+        $this->faults->failWhen(static function (string $sql) use (&$loads, &$claims): bool {
+            return (preg_match('/^SELECT .* FROM job_queue t0/', $sql) && ++$loads === 1)
+                || (preg_match('/^UPDATE job_queue SET status = \?, started_at = \?/', $sql) && ++$claims === 1);
+        });
+
+        ($this->handler())(new JobMessage($id));
+        $this->faults->disable();
+
+        self::assertSame(2, $this->faults->injected);
+        $row = $this->fetchJob($id);
+        self::assertSame(Job::STATUS_COMPLETED, $row['status']);
+        self::assertSame("line 1\n", $row['output']);
+        $this->assertConnectionUsable();
+    }
+
     public function testUnlimitedOutput(): void
     {
         $id = $this->createJob('test:big', ['--bytes=30000', '--chunk=1000']);
@@ -281,5 +489,18 @@ class JobMessageHandlerTest extends DatabaseTestCase
         $job = $this->entityManager->find(Job::class, $id);
         self::assertSame(Job::STATUS_COMPLETED, $job->getStatus());
         self::assertSame("line 1\n", $job->getOutput());
+    }
+
+    /**
+     * Makes the database reject (with an error which is not a lost connection) every output which would contain the text.
+     */
+    private function rejectOutputContaining(string $text): void
+    {
+        $this->connection->executeStatement(sprintf(
+            "CREATE TRIGGER reject_output BEFORE UPDATE OF output ON job_queue WHEN instr(NEW.output, '%s') > 0
+             BEGIN SELECT RAISE(ABORT, 'value rejected by the test trigger'); END",
+            $text
+        ));
+        $this->queries->reset();
     }
 }

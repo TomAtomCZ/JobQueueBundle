@@ -7,17 +7,27 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
         php: [ '8.1', '8.2', '8.3', '8.4', '8.5' ]
         symfony: [ '6.4.*', '7.4.*' ]
+        doctrine: [ 'latest' ]
         exclude:
           - php: 8.1
             symfony: '7.4.*'
+        include:
+          # JobOutputWriter and the test support branch between DBAL 3 and 4 - keep the old majors covered
+          - php: '8.2'
+            symfony: '6.4.*'
+            doctrine: 'dbal3'
+          - php: '8.4'
+            symfony: '7.4.*'
+            doctrine: 'dbal3'
 
-    name: PHP ${{ matrix.php }} / Symfony ${{ matrix.symfony }}
+    name: PHP ${{ matrix.php }} / Symfony ${{ matrix.symfony }} / Doctrine ${{ matrix.doctrine }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -25,12 +35,19 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: mbstring, intl, pdo_mysql, pdo_sqlite
           ini-values: post_max_size=256M, upload_max_filesize=256M
+          # SYMFONY_REQUIRE is applied by symfony/flex only
+          tools: flex
 
       - name: Set Symfony Version
         run: echo "SYMFONY_REQUIRE=${{ matrix.symfony }}" >> $GITHUB_ENV
 
+      - name: Pin DBAL 3 / ORM 2
+        if: matrix.doctrine == 'dbal3'
+        run: composer require --no-update --no-interaction "doctrine/dbal:^3.9" "doctrine/orm:^2.20" "doctrine/doctrine-bundle:^2.13"
+
       - name: Install Dependencies
-        run: composer install --prefer-dist --no-progress
+        # composer.lock is not committed - resolve for the PHP version and the pinned Symfony version of this leg
+        run: composer update --prefer-dist --no-progress --no-interaction
 
       - name: Run PHPUnit Tests
         run: ./vendor/bin/phpunit

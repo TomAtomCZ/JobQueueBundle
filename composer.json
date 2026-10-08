@@ -58,6 +58,9 @@
     },
     "public-dir": "public"
   },
+  "conflict": {
+    "symfony/dependency-injection": ">=8.0"
+  },
   "require-dev": {
     "ext-pdo_sqlite": "*",
     "phpunit/phpunit": "^10.5"
