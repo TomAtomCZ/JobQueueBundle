@@ -10,7 +10,7 @@
         </defaults>
 
         <prototype namespace="TomAtom\JobQueueBundle\" resource="../src/*"
-                   exclude="../src/{DependencyInjection,Entity,Tests,Kernel.php}"/>
+                   exclude="../src/{DependencyInjection,Entity,Output,Tests,Kernel.php}"/>
 
         <service id="tomatom.job_queue.override_mapping_listener"
                  class="TomAtom\JobQueueBundle\EventListener\OverrideMappingListener"
