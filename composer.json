@@ -30,6 +30,7 @@
     "doctrine/orm": "^2|^3",
     "dragonmantank/cron-expression": "^3",
     "knplabs/knp-paginator-bundle": "^6",
+    "psr/log": "^1|^2|^3",
     "spiriitlabs/form-filter-bundle": "^10|^11|^12",
     "symfony/form": "^6.4 || ^7.4",
     "symfony/framework-bundle": "^6.4 || ^7.4",
@@ -58,6 +59,7 @@
     "public-dir": "public"
   },
   "require-dev": {
+    "ext-pdo_sqlite": "*",
     "phpunit/phpunit": "^10.5"
   }
 }

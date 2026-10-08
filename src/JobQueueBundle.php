@@ -31,6 +31,18 @@ class JobQueueBundle extends AbstractBundle
                         ->scalarNode('heartbeat_interval')->defaultValue('1 minute')->end()
                     ->end()
                 ->end()
+                ->arrayNode('processing')->addDefaultsIfNotSet()
+                    ->children()
+                        ->integerNode('poll_interval_ms')->defaultValue(1000)->min(0)
+                            ->info('How often the job output is written and the cancellation checked while the command runs.')->end()
+                        ->integerNode('output_max_bytes')->defaultValue(4194304)->min(0)
+                            ->info('Cap of the stored job output in bytes (keep it well below MySQL max_allowed_packet), 0 = unlimited.')->end()
+                        ->integerNode('db_failure_tolerance')->defaultValue(30)->min(1)
+                            ->info('Consecutive failed database polls (about one per poll interval) after which a running job is given up.')->end()
+                        ->booleanNode('rerun_on_redelivery')->defaultFalse()
+                            ->info('Run the command again when the message of a job which is already RUNNING is redelivered (e.g. after a worker crash). Default: mark the job as failed.')->end()
+                    ->end()
+                ->end()
             ->end();
     }
 
@@ -71,5 +83,9 @@ class JobQueueBundle extends AbstractBundle
         $builder->setParameter('job_queue.database.job_table_name', $config['database']['job_table_name']);
         $builder->setParameter('job_queue.database.job_recurring_table_name', $config['database']['job_recurring_table_name']);
         $builder->setParameter('job_queue.scheduling.heartbeat_interval', $config['scheduling']['heartbeat_interval']);
+        $builder->setParameter('job_queue.processing.poll_interval_ms', $config['processing']['poll_interval_ms']);
+        $builder->setParameter('job_queue.processing.output_max_bytes', $config['processing']['output_max_bytes']);
+        $builder->setParameter('job_queue.processing.db_failure_tolerance', $config['processing']['db_failure_tolerance']);
+        $builder->setParameter('job_queue.processing.rerun_on_redelivery', $config['processing']['rerun_on_redelivery']);
     }
 }
