@@ -74,6 +74,35 @@ framework:
       TomAtom\JobQueueBundle\Message\JobMessage: job_message # or async
 ```
 
+Recommendations for the transport of the job messages:
+
+- **Disable retries** - `retry_strategy: { max_retries: 0 }`. A retry of a job message means running the command
+  again. The handler itself never throws because a command failed (a failed command is stored as a `failed` job), the
+  only exception it throws is an `UnrecoverableMessageHandlingException` when the job result cannot be stored.
+- **Long jobs and several consumers** - the stock Doctrine transport redelivers a message which is not acknowledged
+  within `redeliver_timeout` (default 3600 s). For jobs running longer than that, run the consumer with `--keepalive`
+  (Symfony >= 7.2, `messenger:consume job_message --keepalive`) or raise `redeliver_timeout`. A redelivered message of
+  a job which is already `running` does not run the command again (see `rerun_on_redelivery` below).
+- **Own DBAL connection (optional)** - the handler keeps no transaction open while the command runs, so sharing the
+  default connection is fine. If you want to be completely sure the handler's connection state never meets the
+  transport's send/reject, use a separate connection to the same database, e.g. `dsn: "doctrine://jobs"` with a
+  `doctrine.dbal.connections.jobs` entry.
+- Do not wrap the job handler in the `doctrine_transaction` middleware - the job state must be visible (and the
+  cancellation readable) while the command runs.
+
+```yaml
+framework:
+  messenger:
+    transports:
+      job_message:
+        dsn: "%env(MESSENGER_TRANSPORT_DSN)%"
+        retry_strategy:
+          max_retries: 0
+        options:
+          queue_name: job_message
+          # redeliver_timeout: 3600 # raise for jobs longer than an hour if you do not use --keepalive
+```
+
 <hr>
 
 #### config/packages/security.yaml:
@@ -140,7 +169,28 @@ job_queue:
     job_recurring_table_name: "your_job_recurring_table_name" # Default = job_recurring_queue
   scheduling:
     heartbeat_interval: "1 hour" # Default = 1 minute
+  processing:
+    poll_interval_ms: 1000 # Default = 1000 - how often the output is written and the cancellation checked
+    output_max_bytes: 4194304 # Default = 4 MB - cap of the stored output, 0 = unlimited (not recommended)
+    db_failure_tolerance: 30 # Default = 30 - consecutive failed database polls (~ seconds) before the job is given up
+    rerun_on_redelivery: false # Default = false - run the command again when a message of a RUNNING job is redelivered
 ```
+
+How a job is processed:
+
+- The job is claimed atomically (`planned` -> `running`), so a duplicate message never runs the command twice.
+- While the command runs, its output is appended to the job and the cancellation is checked at most once per
+  `poll_interval_ms`. All these writes run in autocommit mode through DBAL - no transaction is ever held open by the
+  handler, and the `Job` entity is not managed by the entity manager during the run.
+- A short database outage does not stop the command: the output stays buffered in memory and the write is retried.
+  After `db_failure_tolerance` consecutive failed polls the command is stopped and the job is marked `failed`.
+- Output above `output_max_bytes` is dropped and a `[... output truncated by JobQueueBundle at N bytes ...]` marker is
+  appended once. **Keep `output_max_bytes` well below MySQL `max_allowed_packet`** (64 MB by default on MySQL 8) -
+  the `output` column is a LONGTEXT and a larger value cannot be written or read in one packet.
+- When a message is redelivered for a job which is already `running` (the previous worker died), the job is marked
+  `failed` with an explanation instead of running the command again. Set `rerun_on_redelivery: true` to run it again.
+  Messages of `completed`, `failed` or `cancelled` jobs are ignored, a message of a deleted job is rejected without
+  retry.
 
 #### Update your database so the job tables are created
 
@@ -356,7 +406,9 @@ translations/messages.{locale}.yaml:
 
 ## Testing
 
-The bundle has ready tests for job creations in the tests/ folder.
+The bundle has tests for job creation and integration tests of the job processing in the tests/ folder.
+The integration tests run the real message handler with real subprocesses against a temporary SQLite database, so
+they need the `pdo_sqlite` PHP extension.
 Running tests in your app can be done like this:
 
 ```bash
@@ -368,11 +420,12 @@ The tests are also run on every push / pull request on GitHub.
 ## Dependencies
 
 * "php": ">=8.1",
-* "doctrine/doctrine-bundle": "^2",
+* "doctrine/doctrine-bundle": "^2|^3",
 * "doctrine/orm": "^2|^3",
 * "dragonmantank/cron-expression": "^3",
 * "knplabs/knp-paginator-bundle": "^6",
-* "spiriitlabs/form-filter-bundle": "^11",
+* "psr/log": "^1|^2|^3",
+* "spiriitlabs/form-filter-bundle": "^10|^11|^12",
 * "symfony/form": "^6.4 || ^7.4",
 * "symfony/framework-bundle": "^6.4 || ^7.4",
 * "symfony/lock": "^6.4 || ^7.4",
