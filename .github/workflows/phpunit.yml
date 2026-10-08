@@ -23,7 +23,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: mbstring, intl, pdo_mysql
+          extensions: mbstring, intl, pdo_mysql, pdo_sqlite
           ini-values: post_max_size=256M, upload_max_filesize=256M
 
       - name: Set Symfony Version

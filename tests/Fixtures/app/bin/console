@@ -1,0 +1,70 @@
+<?php
+// Fake bin/console used by the handler integration tests (the handler runs "php bin/console <command> <params>")
+
+$command = $argv[1] ?? '';
+$options = [];
+foreach (array_slice($argv, 2) as $arg) {
+    if (preg_match('/^--([^=]+)=(.*)$/s', $arg, $m)) {
+        $options[$m[1]] = $m[2];
+    }
+}
+$opt = static fn(string $name, $default = null) => $options[$name] ?? $default;
+
+switch ($command) {
+    case 'test:lines':
+        // Prints --count lines, sleeping --sleep microseconds after each
+        for ($i = 1; $i <= (int)$opt('count', 10); $i++) {
+            echo "line $i\n";
+            usleep((int)$opt('sleep', 100000));
+        }
+        exit(0);
+
+    case 'test:fail':
+        echo "boom\n";
+        fwrite(STDERR, "error output\n");
+        exit(3);
+
+    case 'test:big':
+        // Prints --bytes bytes in --chunk sized pieces
+        $bytes = (int)$opt('bytes', 100000);
+        $chunk = (int)$opt('chunk', 4096);
+        for ($written = 0; $written < $bytes; $written += $chunk) {
+            echo str_repeat('x', min($chunk, $bytes - $written));
+            usleep(1000);
+        }
+        exit(0);
+
+    case 'test:params':
+        // Output params spread over several chunks, one of them split in the middle of the marker
+        echo "starting\nOUTPUT PARAMS: 1\n";
+        usleep(300000);
+        echo " [INFO] OUTPUT PARAMS: two  \n";
+        usleep(300000);
+        echo "OUTPUT PAR";
+        usleep(300000);
+        echo "AMS: 3\ndone";
+        exit(0);
+
+    case 'test:touch':
+        file_put_contents((string)$opt('file'), 'ran');
+        echo "touched\n";
+        exit(0);
+
+    case 'test:cancel-self':
+        // Cancels its own job through a separate database connection, then keeps running
+        echo "started\n";
+        usleep(300000);
+        $pdo = new PDO('sqlite:' . $opt('db'));
+        $pdo->setAttribute(PDO::ATTR_TIMEOUT, 10);
+        $pdo->exec(sprintf("UPDATE job_queue SET status = 'cancelled', cancelled_at = '%s' WHERE id = %d", date('Y-m-d H:i:s'), (int)$opt('id')));
+        echo "cancelled myself\n";
+        for ($i = 0; $i < 100; $i++) {
+            echo "still running $i\n";
+            usleep(100000);
+        }
+        exit(0);
+
+    default:
+        fwrite(STDERR, "Unknown command $command\n");
+        exit(1);
+}
